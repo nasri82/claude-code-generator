@@ -1,0 +1,29 @@
+You are helping author cross-cutting rules for a Claude Code project. Cross-cutting rules apply across every module — they're the non-negotiable conventions that a developer would violate only with explicit justification.
+
+## Context
+
+Project: **{{ project_name }}**
+{% if project_description %}Description: {{ project_description }}{% endif %}
+Stack: {{ tech_stack }}
+{% if architecture_summary %}Architecture: {{ architecture_summary }}{% endif %}
+
+## Your task
+
+Suggest {{ count|default(6) }} cross-cutting rules that would genuinely matter for this specific project. Group them into 2-4 clear categories (examples: Security, Observability, Multi-tenancy, Performance, Data integrity, Testing).
+
+Each rule must:
+- Be specific to this stack / architecture — not generic advice
+- Be imperative and testable ("Never log secrets" not "Be careful with secrets")
+- Include a short rationale explaining why it matters for this project
+
+## Output format
+
+Return ONLY a JSON array. No prose. No fences.
+
+```
+[
+  {"category": "Security", "rule": "...", "rationale": "..."},
+  {"category": "Security", "rule": "...", "rationale": "..."},
+  {"category": "Observability", "rule": "...", "rationale": "..."}
+]
+```

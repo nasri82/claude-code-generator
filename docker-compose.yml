@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+    environment:
+      # From a container, localhost refers to the container itself — use host.docker.internal
+      # to reach Ollama running on your host machine (Windows/Mac/Docker Desktop).
+      # On plain Linux, use --network=host or the host's LAN IP.
+      - LLM_BASE_URL=${LLM_BASE_URL:-http://host.docker.internal:11434/v1}
+      - LLM_MODEL=${LLM_MODEL:-qwen2.5-coder:14b}
+      - LLM_API_KEY=${LLM_API_KEY:-ollama}
+      - LLM_TIMEOUT=${LLM_TIMEOUT:-120}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.3}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+    command: npm run dev

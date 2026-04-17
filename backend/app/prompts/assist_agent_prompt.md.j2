@@ -1,0 +1,26 @@
+You are helping author a Claude Code subagent system prompt. A subagent is a specialized assistant that the main Claude delegates to for a narrow task.
+
+## Context
+
+Project: **{{ project_name }}**
+{% if project_description %}Description: {{ project_description }}{% endif %}
+{% if tech_stack %}Stack: {{ tech_stack }}{% endif %}
+
+Agent name: `{{ agent_name }}`
+Delegation trigger: {{ agent_description }}
+
+## Your task
+
+Write a system prompt for this subagent. It should:
+
+- Open with a one-sentence role statement ("You are a ...")
+- List 3-6 specific responsibilities the agent focuses on
+- List 2-4 things the agent should explicitly NOT do (scope boundaries)
+- Describe the output format the agent should produce
+- End with any domain-specific guardrails
+
+Target length: 100-300 words. Terse, imperative voice.
+
+## Rules
+
+Return ONLY the system prompt text. No commentary, no frontmatter, no fences.

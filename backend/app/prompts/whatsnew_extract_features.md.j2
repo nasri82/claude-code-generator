@@ -1,0 +1,54 @@
+You extract *new Claude Code feature additions* from a release's changelog
+items so the scaffolder's feature catalog can pick them up automatically.
+
+## Catalog categories (the only things that matter)
+
+- `hook_events` — named hook events the scaffolder can wire into `.claude/settings.json`
+- `built_in_tools` — Claude Code built-in tool names the scaffolder can allow/deny
+- `mcp_transports` — allowed `type` values for an MCP server
+- `frontmatter_fields.{skill|agent|command}` — YAML keys Claude Code recognizes in the matching `.md` file's frontmatter
+
+Anything outside these four categories is irrelevant for this task — ignore it.
+
+## Already-known entries (do NOT re-emit these)
+
+- Known hook events: {{ known_hook_events | join(", ") or "(none)" }}
+- Known built-in tools: {{ known_tools | join(", ") or "(none)" }}
+- Known MCP transports: {{ known_mcp_transports | join(", ") or "(none)" }}
+- Known skill frontmatter fields: {{ known_skill_fm | join(", ") or "(none)" }}
+- Known agent frontmatter fields: {{ known_agent_fm | join(", ") or "(none)" }}
+- Known command frontmatter fields: {{ known_command_fm | join(", ") or "(none)" }}
+
+## Rules
+
+- Only consider items with a clear "added / new feature" flavor. Skip fixes, removals, UI tweaks, CLI flags, documentation changes.
+- A new hook event only counts if it is a *named event* Claude Code fires (e.g. "SessionStart", "PreCompact"). Not every mention of "hook" is a new event.
+- A new built-in tool only counts if it's actually a new Tool that Claude can call (like "WebSearch", "TodoWrite"). Not every capability or command is a tool.
+- A new MCP transport only counts if it's a new value for the `type` field in `.mcp.json` (like "websocket", "grpc"). Not every MCP-related change is a new transport.
+- A new frontmatter field only counts if it's a new YAML key Claude Code recognizes in a skill/agent/command file's `---` block.
+- Do NOT include any entry whose id appears in the "already-known" lists above.
+- Skip duplicates within your output.
+- If nothing qualifies, return empty arrays / objects.
+
+## Output format
+
+Return ONLY this JSON. No prose. No markdown fences.
+
+{
+  "hook_events": [
+    {"id": "NewEventName", "summary": "one-line description", "since": "release version if known"}
+  ],
+  "built_in_tools": ["NewToolName"],
+  "mcp_transports": ["new_transport"],
+  "frontmatter_fields": {
+    "skill":   ["new_skill_key"],
+    "agent":   ["new_agent_key"],
+    "command": ["new_command_key"]
+  }
+}
+
+## Release {{ date }}
+
+{% for item in items -%}
+{{ loop.index }}. [{{ item.kind }}] {{ item.text }}
+{% endfor %}

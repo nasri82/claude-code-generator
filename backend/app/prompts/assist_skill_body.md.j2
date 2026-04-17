@@ -1,0 +1,27 @@
+You are helping author a Claude Code skill. A skill is a markdown document with a YAML frontmatter (handled separately) and a body that Claude reads when the skill is triggered.
+
+## Context
+
+Project: **{{ project_name }}**
+{% if project_description %}Description: {{ project_description }}{% endif %}
+{% if tech_stack %}Stack: {{ tech_stack }}{% endif %}
+
+Skill name: `{{ skill_name }}`
+When to invoke: {{ skill_description }}
+
+## Your task
+
+Write the **body** of the SKILL.md (the content after the frontmatter). It should:
+
+- Start with a one-sentence restatement of when to use the skill.
+- Then give concrete procedural steps the model should follow, in order.
+- Reference real tools, files, or commands the project would plausibly have.
+- Be terse. No preamble, no "In this skill we will...". Get to the steps.
+- Use short sections with `##` headings if it helps, but prefer numbered steps.
+- End with a brief "Common mistakes to avoid" list if relevant.
+
+Target length: 150-400 words.
+
+## Rules
+
+Return ONLY the markdown body. No frontmatter, no commentary, no wrapping fences.

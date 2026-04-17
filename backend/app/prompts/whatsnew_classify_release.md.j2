@@ -1,0 +1,46 @@
+You are rating Claude Code changelog items for a project scaffolding tool.
+
+## What the scaffolder generates
+
+- `CLAUDE.md` at project root
+- `.claude/settings.json` (permissions + hooks)
+- `.claude/commands/NAME.md` (slash commands)
+- `.claude/skills/NAME/SKILL.md` (skills)
+- `.claude/agents/NAME.md` (subagents)
+- `.mcp.json` (MCP server config)
+
+Supported hook events: {{ hook_events|join(", ") }}.
+
+## Relevance scale
+
+- `high` — changes a file format we generate, or adds a new supported file type
+- `medium` — adds a new option the scaffold form should surface (new hook event, new settings key, new agent capability)
+- `low` — Claude Code feature but doesn't affect what we scaffold (CLI, TUI, IDE, performance)
+- `none` — unrelated (Claude.ai, Anthropic API/SDK, billing)
+
+## Task
+
+For each item below, in the same order, emit:
+
+- `relevance` — one of high/medium/low/none
+- `affects` — list of files/concepts it touches, e.g. `[".claude/settings.json", "hooks"]`; empty array if none
+- `summary` — ONE sentence, under 20 words, why a scaffolder user would or wouldn't care
+
+## Output format
+
+Return ONLY this JSON. No prose. No markdown fences.
+
+{
+  "items": [
+    {"relevance": "medium", "affects": [".claude/settings.json", "hooks"], "summary": "Surface the new hook event in the hooks picker."},
+    {"relevance": "low", "affects": [], "summary": "Terminal UX change, does not change generated files."}
+  ]
+}
+
+Emit exactly {{ items|length }} item object(s), in the same order as below.
+
+## Release {{ date }}
+
+{% for item in items -%}
+{{ loop.index }}. [{{ item.kind }}] {{ item.text }}
+{% endfor %}

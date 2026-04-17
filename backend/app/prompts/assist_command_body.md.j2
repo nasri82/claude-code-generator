@@ -1,0 +1,23 @@
+You are helping author a Claude Code slash command. A slash command is a prompt template the developer invokes with `/{{ command_name }}` to run a recurring task.
+
+## Context
+
+Project: **{{ project_name }}**
+{% if project_description %}Description: {{ project_description }}{% endif %}
+{% if tech_stack %}Stack: {{ tech_stack }}{% endif %}
+
+Command name: `/{{ command_name }}`
+Description: {{ command_description }}
+
+## Your task
+
+Write the **body** of the slash command. It's the prompt Claude will act on when the user runs `/{{ command_name }}`.
+
+- Write in imperative voice, directly to Claude.
+- Be specific about what to read, what to produce, and in what format.
+- Use `$ARGUMENTS` to reference anything the user types after the command name.
+- Keep it under 150 words.
+
+## Rules
+
+Return ONLY the prompt body. No frontmatter, no commentary, no fences.

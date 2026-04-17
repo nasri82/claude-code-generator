@@ -1,0 +1,17 @@
+{% set _settings = {
+  "permissions": {
+    "allow": allowed_tools,
+    "deny": denied_tools
+  }
+} -%}
+{% if hooks -%}
+{% set _hook_map = {} -%}
+{% for h in hooks -%}
+{% if h.event not in _hook_map -%}{% set _ = _hook_map.update({h.event: []}) %}{% endif -%}
+{% set _entry = {"hooks": [{"type": "command", "command": h.command}]} -%}
+{% if h.matcher -%}{% set _ = _entry.update({"matcher": h.matcher}) %}{% endif -%}
+{% set _ = _hook_map[h.event].append(_entry) -%}
+{% endfor -%}
+{% set _ = _settings.update({"hooks": _hook_map}) -%}
+{% endif -%}
+{{ _settings | tojson(indent=2) }}

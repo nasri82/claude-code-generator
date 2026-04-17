@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+.venv
+.env
+.pytest_cache
+.llm_config.json
+.whatsnew_cache.json
+.applied_releases.json
+APPLIED_RELEASES.md
+.presets.json
+.claude_code_extensions.json

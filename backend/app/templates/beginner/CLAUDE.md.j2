@@ -1,0 +1,34 @@
+# {{ project_name }}
+
+{{ one_liner }}
+
+## Tech Stack
+
+- **Language:** {{ tech_stack.language }}
+{% if tech_stack.framework -%}
+- **Framework:** {{ tech_stack.framework }}
+{% endif -%}
+{% if tech_stack.database -%}
+- **Database:** {{ tech_stack.database }}
+{% endif -%}
+{% if tech_stack.extras -%}
+- **Other:** {{ tech_stack.extras | join(", ") }}
+{% endif %}
+## How to Run
+
+```bash
+{{ run_command }}
+```
+
+{% if conventions -%}
+## Conventions
+
+{% for c in conventions -%}
+- **{{ c.rule }}**{% if c.rationale %} — {{ c.rationale }}{% endif %}
+{% endfor %}
+{% endif -%}
+## Notes for Claude
+
+- Ask clarifying questions when requirements are ambiguous rather than guessing.
+- Prefer small, reviewable changes over large rewrites.
+- When adding a new file, follow the existing structure and naming.

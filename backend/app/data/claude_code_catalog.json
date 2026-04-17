@@ -1,0 +1,76 @@
+{
+  "$schema": "./claude_code_catalog.schema.json",
+  "version": "1",
+  "maintained_through": "2026-04",
+  "_doc": "Canonical Claude Code feature catalog. Keep this file as the single source of truth for what Claude Code supports. Backend schemas, frontend dropdowns, and the changelog-relevance heuristic all derive from here. User-local additions belong in backend/.claude_code_extensions.json (gitignored), NOT in this file.",
+
+  "hook_events": [
+    {
+      "id": "PreToolUse",
+      "summary": "Before a tool call executes. Can veto the call.",
+      "since": "1.0"
+    },
+    {
+      "id": "PostToolUse",
+      "summary": "After a tool call completes.",
+      "since": "1.0"
+    },
+    {
+      "id": "UserPromptSubmit",
+      "summary": "Runs when the user submits a prompt, before Claude sees it.",
+      "since": "1.0"
+    },
+    {
+      "id": "Stop",
+      "summary": "When Claude finishes a turn.",
+      "since": "1.0"
+    },
+    {
+      "id": "SubagentStop",
+      "summary": "When a subagent finishes a turn.",
+      "since": "1.5"
+    },
+    {
+      "id": "SessionStart",
+      "summary": "When a new Claude Code session begins.",
+      "since": "2.0"
+    },
+    {
+      "id": "SessionEnd",
+      "summary": "When a session ends.",
+      "since": "2.0"
+    },
+    {
+      "id": "PreCompact",
+      "summary": "Before conversation context is compacted.",
+      "since": "2.0"
+    },
+    {
+      "id": "Notification",
+      "summary": "When Claude Code surfaces a notification (approval request, error).",
+      "since": "2.0"
+    }
+  ],
+
+  "built_in_tools": [
+    "Read",
+    "Edit",
+    "Write",
+    "Bash",
+    "Glob",
+    "Grep",
+    "WebFetch",
+    "WebSearch",
+    "TodoWrite",
+    "Task",
+    "NotebookEdit"
+  ],
+
+  "frontmatter_fields": {
+    "skill":   ["name", "description"],
+    "agent":   ["name", "description", "tools", "model"],
+    "command": ["description", "args", "allowed-tools"]
+  },
+
+  "mcp_transports": ["stdio", "sse", "http"]
+}

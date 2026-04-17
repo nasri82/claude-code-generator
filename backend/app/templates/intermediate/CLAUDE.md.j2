@@ -1,0 +1,63 @@
+# {{ project_name }}
+
+{{ one_liner }}
+
+## Context
+
+{{ architecture.summary }}
+
+## Tech Stack
+
+- **Language:** {{ tech_stack.language }}
+{% if tech_stack.framework -%}
+- **Framework:** {{ tech_stack.framework }}
+{% endif -%}
+{% if tech_stack.database -%}
+- **Database:** {{ tech_stack.database }}
+{% endif -%}
+{% if tech_stack.extras -%}
+- **Libraries:** {{ tech_stack.extras | join(", ") }}
+{% endif %}
+{% if architecture.key_directories -%}
+## Architecture
+
+| Directory | Purpose |
+|-----------|---------|
+{% for dir, purpose in architecture.key_directories.items() -%}
+| `{{ dir }}` | {{ purpose }} |
+{% endfor %}
+{% endif -%}
+## Commands
+
+| Task | Command |
+|------|---------|
+| Run | `{{ run_command }}` |
+{% if test_command -%}
+| Test | `{{ test_command }}` |
+{% endif %}
+{% if conventions -%}
+## Conventions
+
+{% for c in conventions -%}
+- **{{ c.rule }}**{% if c.rationale %} — {{ c.rationale }}{% endif %}
+{% endfor %}
+{% endif -%}
+## Working Style
+
+- Read before writing. Inspect neighboring files to match the existing patterns before introducing new ones.
+- Keep changes scoped. One concern per commit.
+- If a change crosses architectural boundaries, surface it before proceeding.
+- Prefer editing existing files over creating new ones unless the structure demands it.
+- Run tests after non-trivial changes.
+
+## Slash Commands
+
+{% if commands -%}
+Custom commands live in `.claude/commands/`:
+
+{% for cmd in commands -%}
+- `/{{ cmd.name }}` — {{ cmd.description }}
+{% endfor %}
+{% else -%}
+No custom commands defined yet. Add them to `.claude/commands/`.
+{% endif %}

@@ -1,0 +1,10 @@
+{% set _servers = {} -%}
+{% for s in mcp_servers -%}
+{% set _entry = {"type": s.type} -%}
+{% if s.command -%}{% set _ = _entry.update({"command": s.command}) %}{% endif -%}
+{% if s.args -%}{% set _ = _entry.update({"args": s.args}) %}{% endif -%}
+{% if s.url -%}{% set _ = _entry.update({"url": s.url}) %}{% endif -%}
+{% if s.env -%}{% set _ = _entry.update({"env": s.env}) %}{% endif -%}
+{% set _ = _servers.update({s.name: _entry}) -%}
+{% endfor -%}
+{{ {"mcpServers": _servers} | tojson(indent=2) }}

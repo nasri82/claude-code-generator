@@ -1,0 +1,118 @@
+# {{ project_name }}
+
+{{ one_liner }}
+
+---
+
+## 1. Context
+
+{{ architecture.summary }}
+
+### Tech Stack
+
+- **Language:** {{ tech_stack.language }}
+{% if tech_stack.framework -%}
+- **Framework:** {{ tech_stack.framework }}
+{% endif -%}
+{% if tech_stack.database -%}
+- **Database:** {{ tech_stack.database }}
+{% endif -%}
+{% if tech_stack.extras -%}
+- **Libraries & Tools:** {{ tech_stack.extras | join(", ") }}
+{% endif %}
+{% if architecture.key_directories -%}
+### Architecture
+
+| Path | Purpose |
+|------|---------|
+{% for dir, purpose in architecture.key_directories.items() -%}
+| `{{ dir }}` | {{ purpose }} |
+{% endfor %}
+{% endif -%}
+## 2. Commands
+
+| Task | Command |
+|------|---------|
+| Run | `{{ run_command }}` |
+{% if test_command -%}
+| Test | `{{ test_command }}` |
+{% endif -%}
+{% if build_command -%}
+| Build | `{{ build_command }}` |
+{% endif %}
+{% if conventions -%}
+## 3. Conventions
+
+{% for c in conventions -%}
+- **{{ c.rule }}**{% if c.rationale %} — {{ c.rationale }}{% endif %}
+{% endfor %}
+{% endif -%}
+{% if cross_cutting_rules -%}
+## 4. Cross-Cutting Rules
+
+These rules apply across every module. Violations require explicit justification in PR description.
+
+{% set grouped = {} -%}
+{% for r in cross_cutting_rules -%}
+{% if r.category not in grouped -%}{% set _ = grouped.update({r.category: []}) %}{% endif -%}
+{% set _ = grouped[r.category].append(r) -%}
+{% endfor -%}
+{% for category, rules in grouped.items() %}
+### {{ category }}
+
+{% for r in rules -%}
+- **{{ r.rule }}**{% if r.rationale %} — {{ r.rationale }}{% endif %}
+{% endfor %}
+{% endfor %}
+{% endif -%}
+## 5. Working Style
+
+- **Read first.** Before writing, inspect 2-3 neighboring files to understand existing patterns.
+- **Small changes.** One concern per commit. If scope grows, stop and surface it.
+- **No silent architectural changes.** Crossing module boundaries requires a written rationale.
+- **Tests are not optional.** New logic ships with tests in the same change.
+- **Ask, don't guess.** When requirements are ambiguous, ask one focused question rather than assume.
+- **Match the project's voice.** Look at existing code comments and docs before writing new ones.
+
+{% if skills -%}
+## 6. Skills
+
+Available skills in `.claude/skills/`:
+
+{% for s in skills -%}
+- **`{{ s.name }}`** — {{ s.description[:100] }}{% if s.description|length > 100 %}…{% endif %}
+{% endfor %}
+{% endif -%}
+{% if agents -%}
+## 7. Subagents
+
+Delegate specialized tasks via these agents:
+
+{% for a in agents -%}
+- **`{{ a.name }}`** — {{ a.description }}
+{% endfor %}
+{% endif -%}
+{% if commands -%}
+## 8. Slash Commands
+
+{% for cmd in commands -%}
+- `/{{ cmd.name }}` — {{ cmd.description }}
+{% endfor %}
+{% endif -%}
+{% if include_memory_md -%}
+## 9. Session Memory
+
+Every non-trivial session updates `MEMORY.md` with:
+1. **Current state** — what's in flight
+2. **Decisions made** — with rationale
+3. **Open questions** — blockers or deferred calls
+4. **Next steps** — concrete next actions
+
+Read `MEMORY.md` at the start of every session. Update it before context gets stale.
+{% endif %}
+## 10. Guardrails
+
+- Never commit secrets, keys, or credentials.
+- Never modify production data without explicit confirmation.
+- Never disable tests to make a change pass.
+- When in doubt, stop and ask.

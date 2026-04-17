@@ -1,0 +1,73 @@
+# ============================================================================
+# Environment / secrets
+# ============================================================================
+.env
+.env.local
+.env.*.local
+
+# ============================================================================
+# Claude Code local state
+# ============================================================================
+# Per-user / per-machine permissions + overrides that shouldn't be in VCS.
+.claude/settings.local.json
+# The project-level .claude/settings.json IS typically committed —
+# only the *.local.json variant is user-specific.
+
+# ============================================================================
+# Python
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ============================================================================
+# Node / Next.js
+# ============================================================================
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ============================================================================
+# Scaffolder backend — runtime state (gitignored in backend/ too; repeated
+# here for safety)
+# ============================================================================
+backend/.llm_config.json
+backend/.whatsnew_cache.json
+backend/.applied_releases.json
+backend/.presets.json
+backend/.claude_code_extensions.json
+backend/APPLIED_RELEASES.md
+
+# ============================================================================
+# OS / editor
+# ============================================================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*.swo
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# ============================================================================
+# Logs
+# ============================================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

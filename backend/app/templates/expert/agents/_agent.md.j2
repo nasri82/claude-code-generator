@@ -1,0 +1,7 @@
+---
+{%- for k, v in frontmatter.items() %}
+{{ k }}: {{ v }}
+{%- endfor %}
+---
+
+{{ agent.system_prompt }}
