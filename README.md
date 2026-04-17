@@ -11,6 +11,14 @@ Three tiers cover the full range from "just starting with Claude Code" to "runni
 
 ---
 
+## Screenshots
+
+| Tier selector | Expert tier · bootstrap from description | Expert tier · form sections |
+|:---:|:---:|:---:|
+| ![Tier selector](docs/screenshots/01-tiers.png) | ![Expert bootstrap](docs/screenshots/02-expert-bootstrap.png) | ![Expert form sections](docs/screenshots/03-expert-sections.png) |
+
+---
+
 ## Quick Start
 
 ### 1. Set up the LLM (optional but recommended)
