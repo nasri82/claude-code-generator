@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Import smoke test
+        working-directory: backend
+        run: python -c "from app.main import app; print(f'app ok — {len(app.routes)} routes')"
+
+      - name: End-to-end preview (all tiers)
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          from fastapi.testclient import TestClient
+          from app.main import app
+
+          client = TestClient(app)
+
+          # Minimum-valid body for each tier — no LLM involved, just templates.
+          beginner = {
+              "project_name": "demo", "one_liner": "demo",
+              "tech_stack": {"language": "Python", "extras": []},
+              "run_command": "python app.py",
+              "conventions": [],
+          }
+          intermediate = {
+              **beginner,
+              "architecture": {"summary": "layered", "key_directories": {}},
+              "commands": [],
+              "allowed_tools": ["Read", "Edit"],
+          }
+          expert = {
+              **intermediate,
+              "test_command": "", "build_command": "",
+              "cross_cutting_rules": [],
+              "skills": [], "agents": [], "hooks": [], "mcp_servers": [],
+              "include_memory_md": True,
+              "denied_tools": [],
+          }
+
+          for tier, body in [("beginner", beginner), ("intermediate", intermediate), ("expert", expert)]:
+              r = client.post(f"/api/preview/{tier}", json=body)
+              assert r.status_code == 200, f"{tier} preview failed: {r.status_code} {r.text[:400]}"
+              files = r.json()["files"]
+              assert any(f["path"] == "CLAUDE.md" for f in files), f"{tier} missing CLAUDE.md"
+              print(f"  {tier}: {len(files)} file(s) rendered")
+
+          # Catalog serves its contract
+          r = client.get("/api/catalog")
+          assert r.status_code == 200
+          body = r.json()
+          for key in ("hook_events", "built_in_tools", "mcp_transports", "frontmatter_fields"):
+              assert key in body, f"catalog missing {key}"
+          print(f"  catalog: {len(body['hook_events'])} hook events, {len(body['built_in_tools'])} tools")
+          PY
+
+  frontend:
+    name: Frontend (Node 20)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: Build (production)
+        working-directory: frontend
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: npm run build

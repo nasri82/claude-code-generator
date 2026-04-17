@@ -1,8 +1,13 @@
-# Claude Scaffolder
+# Claude Code Generator
+
+[![CI](https://github.com/nasri82/claude-code-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nasri82/claude-code-generator/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Generate production-ready Claude Code project scaffolds — `CLAUDE.md`, skills, slash commands, subagents, hooks, MCP configs, and `MEMORY.md` — from a web form, with optional LLM assistance.
 
 Three tiers cover the full range from "just starting with Claude Code" to "running a multi-agent system with cross-cutting rules." A local LLM (Ollama by default) can fill the entire form from a one-paragraph description, suggest content for individual fields, or review your finished scaffold for gaps.
+
+**Self-updating:** a built-in *What's New* panel tracks the upstream Claude Code changelog, lets you *apply* releases with one click, and the LLM extracts any new hook events, tools, or frontmatter fields into the feature catalog — new options appear in the form automatically, no code changes required.
 
 ---
 
@@ -15,8 +20,9 @@ The scaffolder works without an LLM — forms fill the templates directly. Hook 
 **Ollama (recommended):**
 ```bash
 # Install Ollama: https://ollama.com
-ollama pull qwen2.5-coder:14b   # or another model you prefer
-ollama serve                     # usually runs as a service already
+ollama pull qwen2.5-coder:7b    # good balance of quality and speed (default)
+# ollama pull qwen2.5-coder:14b # stronger, slower; better for expert-tier bootstrap
+ollama serve                    # usually runs as a service already
 ```
 
 **Any OpenAI-compatible endpoint works:** LM Studio, vLLM, llama.cpp server, or the OpenAI API itself. Set `LLM_BASE_URL` and `LLM_MODEL` in `.env`.
@@ -88,6 +94,39 @@ Inline **✨ Assist** buttons populate specific heavyweight fields:
 
 Click **✨ Review scaffold** under the form. The LLM reads all generated files and returns structured findings categorized as `missing`, `vague`, `risky`, or `praise`, each with a specific location and suggested fix.
 
+### 4. Scaffold presets (all tiers)
+
+Save the current form state as a named preset, then reload it on any new project. Presets are scoped per tier and persisted on disk (`backend/.presets.json`, gitignored). The `load preset` dropdown shows an active-preset badge next to the currently loaded one.
+
+---
+
+## What's New & Feature Catalog
+
+### The What's New panel
+
+Open from the status bar. The panel:
+
+1. Fetches the Claude Code changelog from [GitHub](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md), parses it deterministically, and tags each item by heuristic relevance to the scaffolder (`high` / `medium` / `low` / `none`). No LLM required for this step — it's fast and always works.
+2. Optionally refines a release with the local LLM — smaller prompt per release, so it's reliable on 7B models. Each release gets a short summary and a refined relevance tag.
+3. Lets you **apply** a release — records adoption in `backend/.applied_releases.json` + a human-readable `APPLIED_RELEASES.md` log + extracts any new Claude Code features from the release text into the local feature catalog.
+
+### The feature catalog
+
+A single source of truth ships at [`backend/app/data/claude_code_catalog.json`](backend/app/data/claude_code_catalog.json). It declares everything the scaffolder knows about Claude Code:
+
+| Section | Drives |
+|--------|--------|
+| `hook_events` | The *Event* dropdown in the expert hooks editor, the changelog-relevance parser's keyword list, and the What's New classify prompt |
+| `built_in_tools` | The new **Tool Permissions** picker (intermediate + expert); allow/deny checkboxes derive from this list |
+| `mcp_transports` | The MCP server *Type* dropdown |
+| `frontmatter_fields` | Which YAML keys the skill / agent / command templates emit (`name`, `description`, `tools`, `model`, `allowed-tools`, …) |
+
+Both the backend and the frontend read from `GET /api/catalog`. When Anthropic adds a new feature, there's exactly one place to update.
+
+### User-local extensions
+
+`backend/.claude_code_extensions.json` (gitignored) merges additively on top of the canonical catalog. When you *apply* a release, the LLM extracts any newly-introduced entries into this file and the catalog reloads in place — the new hook event, tool, or frontmatter field shows up in the form on the next render, with no restart and no code changes.
+
 ### LLM Networking Notes
 
 | Your setup | `LLM_BASE_URL` |
@@ -103,52 +142,79 @@ The `docker-compose.yml` already sets `host.docker.internal` as the default. Ove
 ## Architecture
 
 ```
-claude-scaffolder/
-├── backend/                    # FastAPI
+claude-code-generator/
+├── backend/                              # FastAPI
 │   ├── app/
-│   │   ├── main.py             # App + CORS + routes
-│   │   ├── config.py           # LLM env config
+│   │   ├── main.py                       # App + CORS + routers
+│   │   ├── config.py                     # LLM env config + disk-persisted overrides
+│   │   ├── data/
+│   │   │   └── claude_code_catalog.json  # Single source of truth for Claude Code features
 │   │   ├── routes/
-│   │   │   ├── generate.py     # POST /api/generate/{tier} → ZIP
-│   │   │   ├── preview.py      # POST /api/preview/{tier}  → JSON
-│   │   │   └── ai.py           # POST /api/ai/{bootstrap,assist,review}
-│   │   ├── schemas/            # Pydantic v2 per tier
+│   │   │   ├── generate.py               # POST /api/generate/{tier} → ZIP
+│   │   │   ├── preview.py                # POST /api/preview/{tier}  → JSON
+│   │   │   ├── ai.py                     # POST /api/ai/{bootstrap,assist,review}
+│   │   │   ├── config.py                 # GET/POST /api/config/llm
+│   │   │   ├── catalog.py                # GET /api/catalog (merged canonical + extensions)
+│   │   │   ├── presets.py                # CRUD /api/presets
+│   │   │   └── whatsnew.py               # GET /api/whatsnew, /classify, /apply
+│   │   ├── schemas/                      # Pydantic v2 per tier
 │   │   ├── services/
-│   │   │   ├── renderer.py     # Scaffold Jinja env
-│   │   │   ├── packager.py     # build_{tier}() → ZIP
-│   │   │   ├── prompts.py      # Prompt-template Jinja env
-│   │   │   └── llm.py          # OpenAI-compat client (httpx)
-│   │   ├── templates/          # Output templates per tier
+│   │   │   ├── renderer.py               # Scaffold Jinja env
+│   │   │   ├── packager.py               # build_{tier}() → ZIP
+│   │   │   ├── prompts.py                # Prompt-template Jinja env
+│   │   │   ├── llm.py                    # OpenAI-compat client (httpx)
+│   │   │   ├── catalog.py                # Catalog loader + canonical/extensions merge
+│   │   │   ├── catalog_extensions.py     # Write user-local extensions from release apply
+│   │   │   ├── changelog_parser.py       # Deterministic changelog parser + heuristics
+│   │   │   ├── applied_releases.py       # Persistent "applied" bookmark + markdown log
+│   │   │   ├── frontmatter.py            # Build catalog-driven frontmatter blocks
+│   │   │   └── presets.py                # Form-state preset storage
+│   │   ├── templates/                    # Output templates per tier
 │   │   │   ├── beginner/
 │   │   │   ├── intermediate/
-│   │   │   └── expert/
-│   │   └── prompts/            # LLM prompt templates
+│   │   │   └── expert/                   # Agents / skills / commands use shared dict-driven frontmatter
+│   │   └── prompts/                      # LLM prompt templates
 │   │       ├── bootstrap.md.j2
 │   │       ├── assist_*.md.j2
-│   │       └── review.md.j2
+│   │       ├── review.md.j2
+│   │       ├── whatsnew_classify_release.md.j2
+│   │       └── whatsnew_extract_features.md.j2
 │   ├── requirements.txt
 │   └── Dockerfile
-├── frontend/                   # Next.js 14 App Router
+├── frontend/                             # Next.js 14 App Router
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── page.tsx        # Tier selector
+│   │   │   ├── page.tsx                  # Tier selector
 │   │   │   ├── beginner/
 │   │   │   ├── intermediate/
-│   │   │   └── expert/
+│   │   │   ├── expert/
+│   │   │   ├── legend/                   # Concept reference (CLAUDE.md, skills, agents, ...)
+│   │   │   └── settings/                 # LLM configuration UI
 │   │   ├── components/
 │   │   │   ├── PreviewPanel.tsx
 │   │   │   ├── FieldArray.tsx
-│   │   │   ├── BootstrapCard.tsx   # ✨ describe-your-project card
-│   │   │   ├── AssistButton.tsx    # ✨ inline field assist
-│   │   │   └── ReviewPanel.tsx     # ✨ post-gen review
-│   │   └── lib/
-│   │       ├── schemas.ts      # Zod mirror of Pydantic
-│   │       ├── api.ts          # preview + generate
-│   │       └── ai.ts           # bootstrap + assist + review
+│   │   │   ├── BootstrapCard.tsx         # ✨ describe-your-project card
+│   │   │   ├── AssistButton.tsx          # ✨ inline field assist
+│   │   │   ├── ReviewPanel.tsx           # ✨ post-gen review
+│   │   │   ├── WhatsNewPanel.tsx         # Changelog digest + apply
+│   │   │   ├── PresetPicker.tsx          # Save / load named form state
+│   │   │   ├── ToolsPicker.tsx           # Catalog-driven tool allow/deny grid
+│   │   │   └── StatusBar.tsx
+│   │   ├── lib/
+│   │   │   ├── schemas.ts                # Zod mirror of Pydantic
+│   │   │   ├── api.ts                    # preview + generate + API_BASE
+│   │   │   ├── ai.ts                     # bootstrap + assist + review
+│   │   │   ├── catalog.ts                # Feature catalog client (cached)
+│   │   │   ├── presets.ts                # Preset CRUD client
+│   │   │   ├── whatsnew.ts               # Changelog client
+│   │   │   └── config.ts                 # LLM settings client
+│   │   └── styles/
 │   ├── package.json
 │   └── Dockerfile
+├── .github/workflows/ci.yml              # Typecheck + backend import + preview smoke tests
 ├── .env.example
 ├── docker-compose.yml
+├── LICENSE
 └── README.md
 ```
 
@@ -172,20 +238,44 @@ claude-scaffolder/
 
 ## Extending
 
+### Add a new Claude Code feature the scaffolder knows about (hook event, tool, MCP transport, frontmatter field)
+
+Two options:
+
+**Via the UI** — open *What's New*, find the release that introduced the feature, click **apply to application**. The LLM extracts new entries into `backend/.claude_code_extensions.json` and the catalog reloads in place. The entry shows up in the relevant form dropdown immediately.
+
+**Manually** — add to [`backend/app/data/claude_code_catalog.json`](backend/app/data/claude_code_catalog.json):
+
+```json
+{
+  "hook_events": [
+    { "id": "AgentCheckpoint", "summary": "Fires when an agent checkpoints state", "since": "3.0" }
+  ]
+}
+```
+
+Restart the backend. The event now appears in:
+- The hooks *Event* dropdown (expert tier)
+- The changelog relevance parser's keyword list
+- The LLM classify prompt's supported-events reference
+
 ### Add a new field to an existing tier
+
 1. Add to `backend/app/schemas/{tier}.py`
-2. Reference in the matching `.j2` template
-3. Mirror in `frontend/src/lib/schemas.ts`
-4. Add form input in `frontend/src/app/{tier}/page.tsx`
+2. Mirror in `frontend/src/lib/schemas.ts`
+3. Add form input in `frontend/src/app/{tier}/page.tsx`
+4. If it should appear in `.md` frontmatter, add the key to `frontmatter_fields.{kind}` in the catalog and to the matching Pydantic model — the shared dict-driven template picks it up automatically
 
 ### Add a new AI assist kind
+
 1. Add a prompt template in `backend/app/prompts/assist_{kind}.md.j2`
 2. Add the kind to the `Literal` in `routes/ai.py::AssistRequest`
 3. Add the handler branch in `routes/ai.py::assist`
 4. Wire an `<AssistButton kind="..." context={...} />` next to the target field
 
 ### Swap out the LLM
-Just change `LLM_BASE_URL` and `LLM_MODEL` in `.env`. No code change required as long as the endpoint is OpenAI-compatible.
+
+Change `LLM_BASE_URL` and `LLM_MODEL` in `.env`, or edit them live in **Settings** (changes persist to `backend/.llm_config.json` and survive restarts). No code change required as long as the endpoint is OpenAI-compatible.
 
 ---
 
