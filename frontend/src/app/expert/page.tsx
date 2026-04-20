@@ -44,24 +44,22 @@ export default function ExpertPage() {
   });
   const { register, control, handleSubmit, watch, setValue } = form;
   const allowedTools = watch("allowed_tools") ?? [];
-  const deniedTools = watch("denied_tools") ?? [];
+  const deniedTools  = watch("denied_tools")  ?? [];
 
-  const conv = useFieldArray({ control, name: "conventions" });
-  const ccr = useFieldArray({ control, name: "cross_cutting_rules" });
-  const cmds = useFieldArray({ control, name: "commands" });
+  const conv   = useFieldArray({ control, name: "conventions" });
+  const ccr    = useFieldArray({ control, name: "cross_cutting_rules" });
+  const cmds   = useFieldArray({ control, name: "commands" });
   const skills = useFieldArray({ control, name: "skills" });
   const agents = useFieldArray({ control, name: "agents" });
-  const hooks = useFieldArray({ control, name: "hooks" });
-  const mcps = useFieldArray({ control, name: "mcp_servers" });
+  const hooks  = useFieldArray({ control, name: "hooks" });
+  const mcps   = useFieldArray({ control, name: "mcp_servers" });
 
-  const [files, setFiles] = useState<PreviewFile[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [files, setFiles]           = useState<PreviewFile[]>([]);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
   const [hookEvents, setHookEvents] = useState<HookEvent[]>([]);
   const [mcpTransports, setMcpTransports] = useState<string[]>([
-    "stdio",
-    "sse",
-    "http",
+    "stdio", "sse", "http",
   ]);
 
   useEffect(() => {
@@ -73,8 +71,6 @@ export default function ExpertPage() {
         if (c.mcp_transports?.length) setMcpTransports(c.mcp_transports);
       })
       .catch(() => {
-        // Catalog unreachable — existing default states already have sensible
-        // hardcoded fallbacks so the form still renders.
         if (!cancelled) {
           setHookEvents([
             { id: "PreToolUse" },
@@ -84,9 +80,7 @@ export default function ExpertPage() {
           ]);
         }
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   async function onPreview(data: ExpertInput) {
@@ -122,34 +116,78 @@ export default function ExpertPage() {
       <StatusBar />
 
       <main className="min-h-screen px-6 py-8 max-w-7xl mx-auto">
-        <nav className="mb-5">
-          <Link href="/" className="link-ruled text-xs" style={{ fontFamily: "var(--font-mono)" }}>
+
+        {/* ── breadcrumb + tier strip ── */}
+        <div
+          className="flex items-center justify-between mb-7 pb-4 border-b"
+          style={{ borderColor: "var(--rule-hair)" }}
+        >
+          <Link
+            href="/"
+            className="link-ruled"
+            style={{ fontFamily: "var(--font-mono)", fontSize: "0.72rem" }}
+          >
             ← All tiers
           </Link>
-        </nav>
+          <div className="flex items-center gap-3">
+            {[
+              { label: "I · Beginner",       href: "/beginner",     active: false },
+              { label: "II · Intermediate",  href: "/intermediate", active: false },
+              { label: "III · Expert",       href: "/expert",       active: true  },
+            ].map((t) => (
+              <Link
+                key={t.href}
+                href={t.href}
+                style={{
+                  fontFamily:     "var(--font-mono)",
+                  fontSize:       "0.65rem",
+                  letterSpacing:  "0.1em",
+                  color:          t.active ? "var(--prussian)" : "var(--ink-faint)",
+                  fontWeight:     t.active ? 600 : 400,
+                  textDecoration: "none",
+                  padding:        "0.2rem 0",
+                  borderBottom:   t.active ? "2px solid var(--prussian)" : "2px solid transparent",
+                  transition:     "color 0.12s, border-color 0.12s",
+                }}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </div>
+        </div>
 
-        <header className="mb-8 pb-5 border-b flex items-baseline justify-between gap-6" style={{ borderColor: "var(--rule-hair)" }}>
-          <div>
-            <div
-              className="uppercase mb-2"
+        {/* ── page header ── */}
+        <header className="mb-8">
+          <div className="caption mb-2" style={{ letterSpacing: "0.22em" }}>Tier III · Expert</div>
+          <h1
+            style={{
+              fontFamily:            "var(--font-display)",
+              fontSize:              "clamp(2rem, 4vw, 2.75rem)",
+              fontWeight:            500,
+              fontVariationSettings: "'SOFT' 20, 'opsz' 72",
+              letterSpacing:         "-0.015em",
+              lineHeight:            1,
+              margin:                0,
+              color:                 "var(--ink)",
+            }}
+          >
+            Full{" "}
+            <span
               style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "0.65rem",
-                color: "var(--ink-faint)",
-                letterSpacing: "0.2em",
+                fontVariationSettings: "'SOFT' 100, 'opsz' 144",
+                color:                 "var(--prussian)",
               }}
             >
-              Tier III · Expert
-            </div>
-            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2.5rem", lineHeight: 1, margin: 0, fontVariationSettings: "'SOFT' 30" }}>
-              Full agentic scaffold
-            </h1>
-            <p className="mt-2" style={{ color: "var(--ink-muted)", fontSize: "0.9375rem" }}>
-              CLAUDE.md, MEMORY.md, skills, agents, hooks, MCP servers.
-            </p>
-          </div>
+              agentic
+            </span>{" "}
+            scaffold
+          </h1>
+          <p className="mt-2.5" style={{ color: "var(--ink-muted)", fontSize: "0.9375rem", lineHeight: 1.55 }}>
+            CLAUDE.md, MEMORY.md, skills, agents, hooks, MCP servers — everything.
+          </p>
         </header>
 
+        {/* ── two-col layout ── */}
         <div className="grid lg:grid-cols-2 gap-8">
           <div className="space-y-5">
             <PresetPicker<ExpertInput>
@@ -164,8 +202,15 @@ export default function ExpertPage() {
             />
 
             <form onSubmit={handleSubmit(onPreview)} className="space-y-4">
-              {/* Project basics — always visible */}
-              <div className="plate plate-ticked p-4 space-y-4">
+
+              {/* Identity plate */}
+              <div
+                className="plate plate-ticked p-5 space-y-4"
+                style={{ background: "var(--paper-light)" }}
+              >
+                <div className="caption mb-1" style={{ letterSpacing: "0.18em" }}>
+                  Project identity
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label>Project name</label>
@@ -173,13 +218,18 @@ export default function ExpertPage() {
                   </div>
                   <div>
                     <label>Run command</label>
-                    <input {...register("run_command")} placeholder="uvicorn app.main:app --reload" />
+                    <input
+                      {...register("run_command")}
+                      placeholder="uvicorn app.main:app --reload"
+                    />
                   </div>
                 </div>
-
                 <div>
                   <label>One-liner</label>
-                  <input {...register("one_liner")} placeholder="Multi-tenant SOC platform." />
+                  <input
+                    {...register("one_liner")}
+                    placeholder="Multi-tenant SOC platform."
+                  />
                 </div>
               </div>
 
@@ -208,7 +258,10 @@ export default function ExpertPage() {
                   </div>
                   <div className="col-span-2">
                     <label>Build command</label>
-                    <input {...register("build_command")} placeholder="docker compose build" />
+                    <input
+                      {...register("build_command")}
+                      placeholder="docker compose build"
+                    />
                   </div>
                 </div>
               </CollapsibleSection>
@@ -241,7 +294,9 @@ export default function ExpertPage() {
                 <FieldArray
                   label="Rules"
                   items={ccr.fields}
-                  onAdd={() => ccr.append({ category: "Security", rule: "", rationale: "" })}
+                  onAdd={() =>
+                    ccr.append({ category: "Security", rule: "", rationale: "" })
+                  }
                   onRemove={(i) => ccr.remove(i)}
                   renderItem={(i) => (
                     <div className="space-y-2">
@@ -249,14 +304,18 @@ export default function ExpertPage() {
                         <div>
                           <label>Category</label>
                           <input
-                            {...register(`cross_cutting_rules.${i}.category` as const)}
+                            {...register(
+                              `cross_cutting_rules.${i}.category` as const
+                            )}
                             placeholder="Security"
                           />
                         </div>
                         <div>
                           <label>Rule</label>
                           <input
-                            {...register(`cross_cutting_rules.${i}.rule` as const)}
+                            {...register(
+                              `cross_cutting_rules.${i}.rule` as const
+                            )}
                             placeholder="Never log secrets"
                           />
                         </div>
@@ -264,7 +323,9 @@ export default function ExpertPage() {
                       <div>
                         <label>Rationale</label>
                         <input
-                          {...register(`cross_cutting_rules.${i}.rationale` as const)}
+                          {...register(
+                            `cross_cutting_rules.${i}.rationale` as const
+                          )}
                           placeholder="PII risk"
                         />
                       </div>
@@ -306,23 +367,35 @@ export default function ExpertPage() {
                 <FieldArray
                   label="Commands"
                   items={cmds.fields}
-                  onAdd={() => cmds.append({ name: "review", description: "", body: "" })}
+                  onAdd={() =>
+                    cmds.append({ name: "review", description: "", body: "" })
+                  }
                   onRemove={(i) => cmds.remove(i)}
                   renderItem={(i) => (
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label>Name (no slash)</label>
-                          <input {...register(`commands.${i}.name` as const)} placeholder="review" />
+                          <input
+                            {...register(`commands.${i}.name` as const)}
+                            placeholder="review"
+                          />
                         </div>
                         <div>
                           <label>Description</label>
-                          <input {...register(`commands.${i}.description` as const)} placeholder="Review the staged diff" />
+                          <input
+                            {...register(`commands.${i}.description` as const)}
+                            placeholder="Review the staged diff"
+                          />
                         </div>
                       </div>
                       <div>
                         <label>Body</label>
-                        <textarea rows={3} {...register(`commands.${i}.body` as const)} placeholder="Review the staged diff. Focus on bugs, style, missing tests." />
+                        <textarea
+                          rows={3}
+                          {...register(`commands.${i}.body` as const)}
+                          placeholder="Review the staged diff. Focus on bugs, style, missing tests."
+                        />
                       </div>
                     </div>
                   )}
@@ -337,21 +410,34 @@ export default function ExpertPage() {
                 <FieldArray
                   label="Skills"
                   items={skills.fields}
-                  onAdd={() => skills.append({ name: "", description: "", body: "" })}
+                  onAdd={() =>
+                    skills.append({ name: "", description: "", body: "" })
+                  }
                   onRemove={(i) => skills.remove(i)}
                   renderItem={(i) => (
                     <div className="space-y-2">
                       <div>
                         <label>Name (kebab-case)</label>
-                        <input {...register(`skills.${i}.name` as const)} placeholder="soc-triage" />
+                        <input
+                          {...register(`skills.${i}.name` as const)}
+                          placeholder="soc-triage"
+                        />
                       </div>
                       <div>
                         <label>Description (when to invoke — 20+ chars)</label>
-                        <textarea rows={2} {...register(`skills.${i}.description` as const)} placeholder="Use when triaging SOC alerts. Walks through severity scoring and escalation logic." />
+                        <textarea
+                          rows={2}
+                          {...register(`skills.${i}.description` as const)}
+                          placeholder="Use when triaging SOC alerts. Walks through severity scoring and escalation logic."
+                        />
                       </div>
                       <div>
                         <label>Body</label>
-                        <textarea rows={4} {...register(`skills.${i}.body` as const)} placeholder="Step 1: check the alert source..." />
+                        <textarea
+                          rows={4}
+                          {...register(`skills.${i}.body` as const)}
+                          placeholder="Step 1: check the alert source..."
+                        />
                       </div>
                     </div>
                   )}
@@ -366,22 +452,43 @@ export default function ExpertPage() {
                 <FieldArray
                   label="Agents"
                   items={agents.fields}
-                  onAdd={() => agents.append({ name: "", description: "", tools: [], model: "", system_prompt: "" })}
+                  onAdd={() =>
+                    agents.append({
+                      name: "",
+                      description: "",
+                      tools: [],
+                      model: "",
+                      system_prompt: "",
+                    })
+                  }
                   onRemove={(i) => agents.remove(i)}
                   renderItem={(i) => (
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label>Name (kebab-case)</label>
-                          <input {...register(`agents.${i}.name` as const)} placeholder="security-reviewer" />
+                          <input
+                            {...register(`agents.${i}.name` as const)}
+                            placeholder="security-reviewer"
+                          />
                         </div>
                         <div>
                           <label>When to delegate</label>
-                          <input {...register(`agents.${i}.description` as const)} placeholder="Security-focused code review" />
+                          <input
+                            {...register(`agents.${i}.description` as const)}
+                            placeholder="Security-focused code review"
+                          />
                         </div>
                       </div>
                       <div>
-                        <label>Model <span style={{ color: "var(--ink-faint)", fontWeight: 400 }}>(optional)</span></label>
+                        <label>
+                          Model{" "}
+                          <span
+                            style={{ color: "var(--ink-faint)", fontWeight: 400 }}
+                          >
+                            (optional)
+                          </span>
+                        </label>
                         <input
                           {...register(`agents.${i}.model` as const)}
                           placeholder="sonnet | haiku | opus (leave blank for default)"
@@ -389,7 +496,11 @@ export default function ExpertPage() {
                       </div>
                       <div>
                         <label>System prompt</label>
-                        <textarea rows={3} {...register(`agents.${i}.system_prompt` as const)} placeholder="You are a security reviewer. Focus on auth, injection, data leakage..." />
+                        <textarea
+                          rows={3}
+                          {...register(`agents.${i}.system_prompt` as const)}
+                          placeholder="You are a security reviewer. Focus on auth, injection, data leakage..."
+                        />
                       </div>
                     </div>
                   )}
@@ -419,11 +530,7 @@ export default function ExpertPage() {
                           <label>Event</label>
                           <select {...register(`hooks.${i}.event` as const)}>
                             {hookEvents.map((ev) => (
-                              <option
-                                key={ev.id}
-                                value={ev.id}
-                                title={ev.summary}
-                              >
+                              <option key={ev.id} value={ev.id} title={ev.summary}>
                                 {ev.id}
                               </option>
                             ))}
@@ -431,12 +538,18 @@ export default function ExpertPage() {
                         </div>
                         <div>
                           <label>Matcher</label>
-                          <input {...register(`hooks.${i}.matcher` as const)} placeholder="Bash" />
+                          <input
+                            {...register(`hooks.${i}.matcher` as const)}
+                            placeholder="Bash"
+                          />
                         </div>
                       </div>
                       <div>
                         <label>Command</label>
-                        <input {...register(`hooks.${i}.command` as const)} placeholder="./scripts/pre-bash-guard.sh" />
+                        <input
+                          {...register(`hooks.${i}.command` as const)}
+                          placeholder="./scripts/pre-bash-guard.sh"
+                        />
                       </div>
                     </div>
                   )}
@@ -451,14 +564,26 @@ export default function ExpertPage() {
                 <FieldArray
                   label="Servers"
                   items={mcps.fields}
-                  onAdd={() => mcps.append({ name: "", type: "stdio", command: "", args: [], url: "", env: {} })}
+                  onAdd={() =>
+                    mcps.append({
+                      name: "",
+                      type: "stdio",
+                      command: "",
+                      args: [],
+                      url: "",
+                      env: {},
+                    })
+                  }
                   onRemove={(i) => mcps.remove(i)}
                   renderItem={(i) => (
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label>Name</label>
-                          <input {...register(`mcp_servers.${i}.name` as const)} placeholder="github" />
+                          <input
+                            {...register(`mcp_servers.${i}.name` as const)}
+                            placeholder="github"
+                          />
                         </div>
                         <div>
                           <label>Type</label>
@@ -473,7 +598,10 @@ export default function ExpertPage() {
                       </div>
                       <div>
                         <label>Command (stdio) or URL (http/sse)</label>
-                        <input {...register(`mcp_servers.${i}.command` as const)} placeholder="npx" />
+                        <input
+                          {...register(`mcp_servers.${i}.command` as const)}
+                          placeholder="npx"
+                        />
                       </div>
                     </div>
                   )}
@@ -496,32 +624,54 @@ export default function ExpertPage() {
               </CollapsibleSection>
 
               <CollapsibleSection title="Options" number="§11">
-                <label className="flex items-center gap-2 m-0 normal-case tracking-normal" style={{ color: "var(--ink)", fontFamily: "var(--font-sans)", fontSize: "0.875rem", textTransform: "none", letterSpacing: 0 }}>
-                  <input type="checkbox" {...register("include_memory_md")} className="w-auto" />
+                <label
+                  className="flex items-center gap-2 m-0"
+                  style={{
+                    fontFamily:    "var(--font-sans)",
+                    fontSize:      "0.875rem",
+                    color:         "var(--ink)",
+                    textTransform: "none",
+                    letterSpacing: 0,
+                    fontWeight:    400,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    {...register("include_memory_md")}
+                    className="w-auto"
+                  />
                   Include MEMORY.md session-handoff template
                 </label>
               </CollapsibleSection>
 
+              {/* ── sticky action bar ── */}
               <div
-                className="sticky bottom-4 mt-6 flex gap-3 items-center p-3 rounded-sm"
+                className="sticky bottom-4 z-10 flex gap-3 items-center justify-between p-3"
                 style={{
-                  background: "var(--paper-light)",
-                  border: "1px solid var(--rule-ink)",
-                  boxShadow: "0 -8px 16px -8px rgba(0,0,0,0.06)",
+                  background:   "var(--paper-light)",
+                  border:       "1px solid var(--rule-ink)",
+                  borderRadius: "2px",
+                  boxShadow:    "0 4px 16px -4px rgba(30,58,95,0.15)",
                 }}
               >
-                <button type="submit" className="btn-ghost">
-                  Preview
-                </button>
-                <button type="button" onClick={onDownload} className="btn-primary">
-                  Download ZIP
-                </button>
-                <span
-                  className="ml-auto text-xs"
-                  style={{ color: "var(--ink-faint)", fontFamily: "var(--font-mono)" }}
-                >
-                  {files.length > 0 ? `${files.length} files rendered` : "no preview yet"}
-                </span>
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-ghost">Preview</button>
+                  <button type="button" onClick={onDownload} className="btn-primary">
+                    Download ZIP
+                  </button>
+                </div>
+                {files.length > 0 && (
+                  <span
+                    style={{
+                      fontFamily:    "var(--font-mono)",
+                      fontSize:      "0.65rem",
+                      color:         "var(--ok)",
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    ✓ {files.length} file{files.length !== 1 ? "s" : ""} ready
+                  </span>
+                )}
               </div>
             </form>
 

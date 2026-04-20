@@ -58,15 +58,15 @@ export function StatusBar() {
             {/* LLM status lamp */}
             <span className="flex items-center gap-2">
               <span
-                className="inline-block w-2 h-2 rounded-full"
+                className={`inline-block w-2 h-2 rounded-full${!checking && health?.ok ? " lamp-online" : ""}`}
                 style={{
                   background: checking
                     ? "var(--ink-faint)"
                     : health?.ok
                       ? "var(--ok)"
                       : "var(--err)",
-                  boxShadow: health?.ok
-                    ? "0 0 0 3px rgba(90,122,63,0.15)"
+                  boxShadow: !health?.ok && !checking
+                    ? "0 0 0 3px rgba(156,61,42,0.15)"
                     : "none",
                 }}
                 aria-hidden

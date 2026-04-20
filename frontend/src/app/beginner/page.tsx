@@ -21,6 +21,53 @@ const DEFAULTS: BeginnerInput = {
   conventions: [],
 };
 
+/* ── section wrapper ──────────────────────────────────────────────────────── */
+
+function Section({
+  label,
+  number,
+  children,
+}: {
+  label: string;
+  number: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="plate plate-ticked p-6" style={{ background: "var(--paper-light)", position: "relative" }}>
+      {/* Section number — faint large bg element */}
+      <span
+        aria-hidden
+        style={{
+          position:       "absolute",
+          right:          "0.75rem",
+          top:            "0.25rem",
+          fontFamily:     "var(--font-mono)",
+          fontSize:       "3.5rem",
+          fontWeight:     400,
+          color:          "var(--paper-shadow)",
+          lineHeight:     1,
+          userSelect:     "none",
+          pointerEvents:  "none",
+          letterSpacing:  "-0.04em",
+        }}
+      >
+        {number}
+      </span>
+      <div
+        className="caption mb-4"
+        style={{ letterSpacing: "0.18em", position: "relative", zIndex: 1 }}
+      >
+        {label}
+      </div>
+      <div className="space-y-4" style={{ position: "relative", zIndex: 1 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ── page ─────────────────────────────────────────────────────────────────── */
+
 export default function BeginnerPage() {
   const form = useForm<BeginnerInput>({
     resolver: zodResolver(beginnerSchema),
@@ -29,9 +76,9 @@ export default function BeginnerPage() {
   const { register, control, handleSubmit } = form;
   const conv = useFieldArray({ control, name: "conventions" });
 
-  const [files, setFiles] = useState<PreviewFile[]>([]);
+  const [files, setFiles]     = useState<PreviewFile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
 
   async function onPreview(data: BeginnerInput) {
     setLoading(true);
@@ -49,10 +96,7 @@ export default function BeginnerPage() {
   async function onDownload() {
     const data = form.getValues();
     const parsed = beginnerSchema.safeParse(data);
-    if (!parsed.success) {
-      setError(parsed.error.message);
-      return;
-    }
+    if (!parsed.success) { setError(parsed.error.message); return; }
     setError(null);
     try {
       await generate("beginner", parsed.data);
@@ -64,35 +108,89 @@ export default function BeginnerPage() {
   return (
     <>
       <StatusBar />
+
       <main className="min-h-screen px-6 py-8 max-w-7xl mx-auto">
-        <nav className="mb-5">
-          <Link href="/" className="link-ruled text-xs" style={{ fontFamily: "var(--font-mono)" }}>
+
+        {/* ── breadcrumb + tier strip ── */}
+        <div
+          className="flex items-center justify-between mb-7 pb-4 border-b"
+          style={{ borderColor: "var(--rule-hair)" }}
+        >
+          <Link
+            href="/"
+            className="link-ruled"
+            style={{ fontFamily: "var(--font-mono)", fontSize: "0.72rem" }}
+          >
             ← All tiers
           </Link>
-        </nav>
+          <div className="flex items-center gap-3">
+            {[
+              { label: "I · Beginner",       href: "/beginner",     active: true },
+              { label: "II · Intermediate",  href: "/intermediate", active: false },
+              { label: "III · Expert",       href: "/expert",       active: false },
+            ].map((t) => (
+              <Link
+                key={t.href}
+                href={t.href}
+                style={{
+                  fontFamily:    "var(--font-mono)",
+                  fontSize:      "0.65rem",
+                  letterSpacing: "0.1em",
+                  color:         t.active ? "var(--prussian)" : "var(--ink-faint)",
+                  fontWeight:    t.active ? 600 : 400,
+                  textDecoration: "none",
+                  padding:       "0.2rem 0",
+                  borderBottom:  t.active ? "2px solid var(--prussian)" : "2px solid transparent",
+                  transition:    "color 0.12s, border-color 0.12s",
+                }}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </div>
+        </div>
 
-        <header className="mb-8 pb-5 border-b" style={{ borderColor: "var(--rule-hair)" }}>
-          <div
-            className="uppercase mb-2"
+        {/* ── page header ── */}
+        <header className="mb-8">
+          <div className="caption mb-2" style={{ letterSpacing: "0.22em" }}>Tier I · Beginner</div>
+          <h1
             style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.65rem",
-              color: "var(--ink-faint)",
-              letterSpacing: "0.2em",
+              fontFamily:          "var(--font-display)",
+              fontSize:            "clamp(2rem, 4vw, 2.75rem)",
+              fontWeight:          500,
+              fontVariationSettings: "'SOFT' 40, 'opsz' 72",
+              letterSpacing:       "-0.015em",
+              lineHeight:          1,
+              margin:              0,
+              color:               "var(--ink)",
             }}
           >
-            Tier I · Beginner
-          </div>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2.25rem", lineHeight: 1, margin: 0 }}>
-            One clean CLAUDE.md
+            One clean{" "}
+            <code
+              style={{
+                fontFamily:   "var(--font-mono)",
+                fontSize:     "0.8em",
+                background:   "rgba(30,58,95,0.08)",
+                border:       "1px solid rgba(30,58,95,0.15)",
+                borderRadius: "3px",
+                padding:      "0.05em 0.3em",
+                color:        "var(--prussian)",
+              }}
+            >
+              CLAUDE.md
+            </code>
           </h1>
-          <p className="mt-2" style={{ color: "var(--ink-muted)", fontSize: "0.9375rem" }}>
-            Fill it in, preview, download.
+          <p className="mt-2.5" style={{ color: "var(--ink-muted)", fontSize: "0.9375rem", lineHeight: 1.55 }}>
+            Fill in the details below, preview your output, then download.
           </p>
         </header>
 
+        {/* ── two-col layout: form + preview ── */}
         <div className="grid lg:grid-cols-2 gap-8">
+
+          {/* ── form column ── */}
           <div className="space-y-5">
+
             <PresetPicker<BeginnerInput>
               tier="beginner"
               getData={() => form.getValues()}
@@ -105,51 +203,58 @@ export default function BeginnerPage() {
             />
 
             <form onSubmit={handleSubmit(onPreview)} className="space-y-5">
-              <div className="plate plate-ticked p-5 space-y-4">
+
+              {/* §01 Identity */}
+              <Section label="Project identity" number="01">
                 <div>
                   <label>Project name</label>
-                  <input {...register("project_name")} placeholder="my-awesome-app" />
+                  <input
+                    {...register("project_name")}
+                    placeholder="my-awesome-app"
+                  />
                 </div>
                 <div>
                   <label>One-liner description</label>
-                  <input {...register("one_liner")} placeholder="A REST API for managing todos." />
+                  <input
+                    {...register("one_liner")}
+                    placeholder="A REST API for managing todos."
+                  />
                 </div>
-              </div>
+              </Section>
 
-              <fieldset className="plate plate-ticked p-5 space-y-3">
-                <legend
-                  className="px-2 uppercase"
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "0.65rem",
-                    color: "var(--ink-faint)",
-                    letterSpacing: "0.15em",
-                  }}
-                >
-                  Tech Stack
-                </legend>
-                <div>
-                  <label>Language</label>
-                  <input {...register("tech_stack.language")} placeholder="Python" />
-                </div>
-                <div>
-                  <label>Framework</label>
-                  <input {...register("tech_stack.framework")} placeholder="FastAPI" />
+              {/* §02 Stack */}
+              <Section label="Tech stack" number="02">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label>Language</label>
+                    <input {...register("tech_stack.language")} placeholder="Python" />
+                  </div>
+                  <div>
+                    <label>Framework</label>
+                    <input {...register("tech_stack.framework")} placeholder="FastAPI" />
+                  </div>
                 </div>
                 <div>
                   <label>Database</label>
                   <input {...register("tech_stack.database")} placeholder="PostgreSQL" />
                 </div>
-              </fieldset>
+              </Section>
 
-              <div className="plate plate-ticked p-5">
-                <label>Run command</label>
-                <input {...register("run_command")} placeholder="uvicorn app.main:app --reload" />
-              </div>
+              {/* §03 Commands */}
+              <Section label="Commands" number="03">
+                <div>
+                  <label>Run command</label>
+                  <input
+                    {...register("run_command")}
+                    placeholder="uvicorn app.main:app --reload"
+                  />
+                </div>
+              </Section>
 
-              <div className="plate plate-ticked p-5">
+              {/* §04 Conventions */}
+              <Section label="Conventions" number="04">
                 <FieldArray
-                  label="Conventions"
+                  label=""
                   items={conv.fields}
                   onAdd={() => conv.append({ rule: "", rationale: "" })}
                   onRemove={(i) => conv.remove(i)}
@@ -157,30 +262,58 @@ export default function BeginnerPage() {
                     <div className="space-y-2">
                       <div>
                         <label>Rule</label>
-                        <input {...register(`conventions.${i}.rule` as const)} placeholder="Use type hints everywhere" />
+                        <input
+                          {...register(`conventions.${i}.rule` as const)}
+                          placeholder="Use type hints everywhere"
+                        />
                       </div>
                       <div>
                         <label>Rationale</label>
-                        <input {...register(`conventions.${i}.rationale` as const)} placeholder="Enables static analysis" />
+                        <input
+                          {...register(`conventions.${i}.rationale` as const)}
+                          placeholder="Enables static analysis"
+                        />
                       </div>
                     </div>
                   )}
                 />
-              </div>
+              </Section>
 
+              {/* ── sticky action bar ── */}
               <div
-                className="sticky bottom-4 flex gap-3 items-center p-3 rounded-sm"
+                className="sticky bottom-4 z-10 flex gap-3 items-center justify-between p-3"
                 style={{
-                  background: "var(--paper-light)",
-                  border: "1px solid var(--rule-ink)",
+                  background:   "var(--paper-light)",
+                  border:       "1px solid var(--rule-ink)",
+                  borderRadius: "2px",
+                  boxShadow:    "0 4px 16px -4px rgba(30,58,95,0.15)",
                 }}
               >
-                <button type="submit" className="btn-ghost">Preview</button>
-                <button type="button" onClick={onDownload} className="btn-primary">Download ZIP</button>
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-ghost">
+                    Preview
+                  </button>
+                  <button type="button" onClick={onDownload} className="btn-primary">
+                    Download ZIP
+                  </button>
+                </div>
+                {files.length > 0 && (
+                  <span
+                    style={{
+                      fontFamily:    "var(--font-mono)",
+                      fontSize:      "0.65rem",
+                      color:         "var(--ok)",
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    ✓ {files.length} file{files.length !== 1 ? "s" : ""} ready
+                  </span>
+                )}
               </div>
             </form>
           </div>
 
+          {/* ── preview column ── */}
           <div className="lg:sticky lg:top-6 self-start">
             <FileTreePreview files={files} loading={loading} error={error} />
           </div>
