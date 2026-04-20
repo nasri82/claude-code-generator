@@ -67,7 +67,7 @@ One-line description.
       "You want to run a script before or after Claude uses a specific tool",
       "You want the whole team to share the same Claude Code configuration",
     ],
-    why: "By default Claude Code has broad tool access. settings.json is how you draw boundaries. It’s also the only place hooks are declared — shell commands that run at workflow events. Commit this to git so teammates share the same rules.",
+    why: "By default Claude Code has broad tool access. settings.json is how you draw boundaries: allow specific tools, deny others, or set both to create an explicit allowlist. It’s also the only place hooks are declared — shell commands that fire at nine workflow events. Commit this to git so teammates share the same rules.",
     specimen: `{
   "permissions": {
     "allow": ["Read", "Edit", "Bash", "Grep"],
@@ -102,9 +102,10 @@ One-line description.
       "A task has a non-obvious procedure worth capturing",
       "You want teammates to share workflows without copy-pasting prompts",
     ],
-    why: "Slash commands are how you standardize recurring prompts. `/review` that always looks at the same things, in the same order, produces consistent output regardless of who runs it. The command name is the filename. `$ARGUMENTS` inside the body receives whatever the user typed after the command.",
+    why: "Slash commands are how you standardize recurring prompts. `/review` that always looks at the same things, in the same order, produces consistent output regardless of who runs it. The command name is the filename. `$ARGUMENTS` inside the body receives whatever the user typed after the command. The optional `allowed-tools` frontmatter field restricts which tools Claude may use while running that command — useful for keeping a read-only review command from writing files.",
     specimen: `---
 description: Review staged changes for bugs, style, missing tests
+allowed-tools: Read, Bash, Grep
 ---
 
 Read the staged diff. For each change:
@@ -162,11 +163,12 @@ Step 4: Update the scheduled task in app/tasks/scrape.py.`,
       "The subtask needs different tool access (one agent reads only, another writes)",
       "The main context would get polluted by the subtask’s reasoning",
     ],
-    why: "Isolation. A “security reviewer” agent won’t suddenly decide to implement a fix. Your main Claude stays focused on shipping while the agent focuses on reviewing. Subagents get their own context window, so they don’t chew into the main conversation’s budget either.",
+    why: `Isolation. A “security reviewer” agent won't suddenly decide to implement a fix. Your main Claude stays focused on shipping while the agent focuses on reviewing. Subagents get their own context window, so they don't chew into the main conversation's budget either. The optional model field lets you right-size each agent — a deeper reasoning model for architecture decisions, a faster model for mechanical tasks.`,
     specimen: `---
 name: security-reviewer
 description: Delegate code review for auth, injection, and data-exposure issues.
 tools: Read, Grep
+model: claude-opus-4-5
 ---
 
 You are a security reviewer. Read changes and flag:
@@ -182,6 +184,7 @@ Do NOT propose fixes — only diagnose.`,
       "Over-splitting. If the main Claude can do it, don’t make an agent.",
       "Under-restricting tools. An audit agent with Edit access isn’t an audit agent.",
       "Long system prompts. If you’re writing three paragraphs, the role isn’t tight enough.",
+      "Not setting model. A security or architecture agent benefits from a more powerful model; a fast worker agent benefits from a lighter one.",
     ],
   },
 
@@ -223,17 +226,33 @@ Do NOT propose fixes — only diagnose.`,
     kind: "standard",
     tagline: "Shell commands that run at specific points in Claude’s workflow.",
     when: [
-      "You need to enforce policy (refuse rm -rf before the tool runs)",
-      "You want to log everything Claude does for audit",
-      "You want to format, lint, or test automatically after an edit",
+      "You need to enforce policy (refuse rm -rf before the tool runs) — PreToolUse with exit 2",
+      "You want to format, lint, or test automatically after an edit — PostToolUse",
+      "You want to inject context into every prompt — UserPromptSubmit",
+      "You want to snapshot state before the context window shrinks — PreCompact",
+      "You want a session diary or audit log — SessionStart / SessionEnd",
     ],
-    why: "Hooks give you observability and guardrails without changing Claude’s behavior. Claude keeps doing what it does; hooks decide what happens around that. Events include PreToolUse (can veto), PostToolUse (reacts), UserPromptSubmit (runs before Claude sees your message), and Stop (runs when a turn ends).",
+    why: "Hooks give you observability and guardrails without changing Claude’s behavior. Claude keeps doing what it does; hooks decide what happens around that. Nine events are available: PreToolUse (fires before a tool call — can veto it), PostToolUse (fires after), UserPromptSubmit (runs before Claude sees your message), Stop (turn ends), SubagentStop (a subagent’s turn ends), SessionStart (new session opens), SessionEnd (session closes), PreCompact (before the context window is compacted), and Notification (when Claude surfaces a notification). Hook handlers receive event data as JSON on stdin; exit code 2 vetoes the action.",
     specimen: `"hooks": {
   "PostToolUse": [
     {
       "matcher": "Edit|Write",
       "hooks": [
         {"type": "command", "command": "prettier --write $CLAUDE_TOOL_RESULT_PATH"}
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "hooks": [
+        {"type": "command", "command": "echo ‘Session started’ >> .claude/session.log"}
+      ]
+    }
+  ],
+  "PreCompact": [
+    {
+      "hooks": [
+        {"type": "command", "command": "./scripts/snapshot-memory.sh"}
       ]
     }
   ]
@@ -558,7 +577,9 @@ export default function LegendPage() {
               >
                 The scaffolder generates eight kinds of file. This page explains what
                 each is, when to reach for it, and the common ways they’re
-                misused. Read once, scaffold with intent.
+                misused. Hook events, tool permissions, and frontmatter fields
+                are kept up to date via the What’s New panel. Read once,
+                scaffold with intent.
               </p>
             </div>
             <div

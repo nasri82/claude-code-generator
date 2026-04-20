@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .routes import ai, catalog, config, generate, presets, preview, whatsnew
+from .routes import ai, catalog, config, discover, generate, presets, preview, whatsnew
 
 # Structured logging so we can actually see what's happening
 logging.basicConfig(
@@ -61,6 +61,7 @@ app.include_router(config.router)
 app.include_router(whatsnew.router)
 app.include_router(presets.router)
 app.include_router(catalog.router)
+app.include_router(discover.router)
 
 
 @app.get("/health")

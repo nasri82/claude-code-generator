@@ -122,6 +122,9 @@ export function StatusBar() {
             >
               ✱ What’s new
             </button>
+            <Link href="/discover" className="link-ruled" style={{ fontSize: "0.75rem" }}>
+              Ecosystem
+            </Link>
             <Link href="/legend" className="link-ruled" style={{ fontSize: "0.75rem" }}>
               Legend
             </Link>
