@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code — The Complete Cheat Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0e;
+    --bg-elev: #141418;
+    --bg-code: #16161a;
+    --bg-card: #111116;
+    --text: #e8e3db;
+    --text-dim: #a8a099;
+    --text-faint: #6a6560;
+    --accent: #d97757;    /* Claude clay */
+    --accent-2: #e8a87c;  /* Warm peach */
+    --accent-3: #88b4a0;  /* Muted sage for expert */
+    --accent-4: #c9b99b;  /* Warm tan for intermediate */
+    --border: #24242a;
+    --border-strong: #34343c;
+    --danger: #e85c5c;
+    --success: #7ab47a;
+
+    --font-display: 'Fraunces', ui-serif, Georgia, serif;
+    --font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Subtle grain background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(217, 119, 87, 0.05), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(136, 180, 160, 0.03), transparent 45%);
+  }
+
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header.top {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+  }
+
+  .brand {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(42px, 6vw, 78px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+    font-variation-settings: "opsz" 144;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent-2);
+  }
+
+  .subtitle {
+    font-family: var(--font-body);
+    color: var(--text-dim);
+    font-size: 18px;
+    max-width: 560px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    text-align: right;
+    line-height: 1.8;
+    white-space: nowrap;
+  }
+  .meta .k { color: var(--text-dim); }
+  .meta .v { color: var(--accent); }
+
+  /* Nav */
+  nav.toc {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 64px;
+  }
+  nav.toc a {
+    padding: 18px 20px;
+    background: var(--bg);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  nav.toc a:hover {
+    background: var(--bg-elev);
+    color: var(--accent);
+  }
+  nav.toc a .num {
+    font-size: 10px;
+    color: var(--text-faint);
+  }
+
+  /* Section headers */
+  .section {
+    margin-bottom: 80px;
+    scroll-margin-top: 20px;
+  }
+
+  .tier-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: baseline;
+    border-top: 1px solid var(--border-strong);
+    padding-top: 32px;
+    margin-bottom: 40px;
+  }
+  .tier-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  .tier-badge.t1 { background: var(--accent); color: #1a1a1a; }
+  .tier-badge.t2 { background: var(--accent-4); color: #1a1a1a; }
+  .tier-badge.t3 { background: var(--accent-3); color: #0a0a0a; }
+  .tier-badge.t4 { background: var(--bg-elev); color: var(--accent-2); border: 1px solid var(--accent); }
+
+  .tier-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(32px, 4vw, 48px);
+    margin: 0;
+    line-height: 1;
+  }
+
+  .tier-subtitle {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  /* Content blocks */
+  .block {
+    border-left: 2px solid var(--border);
+    padding: 0 0 0 24px;
+    margin-bottom: 48px;
+  }
+  .block.hot { border-left-color: var(--accent); }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+    color: var(--text);
+  }
+  h2 .num {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--accent);
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+  h2 .new {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    background: var(--accent);
+    color: #1a1a1a;
+    padding: 3px 8px;
+    border-radius: 2px;
+    margin-left: 12px;
+    vertical-align: middle;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    margin: 28px 0 12px;
+  }
+
+  p { margin: 0 0 12px; color: var(--text-dim); }
+  p.lead { color: var(--text); font-size: 16px; margin-bottom: 24px; }
+
+  /* Code */
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--bg-code);
+    padding: 2px 7px;
+    border-radius: 2px;
+    color: var(--accent-2);
+    border: 1px solid var(--border);
+  }
+  .cmd {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg-code);
+    padding: 14px 18px;
+    border-radius: 2px;
+    color: var(--text);
+    margin: 8px 0 16px;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    white-space: pre;
+    position: relative;
+  }
+  .cmd::before {
+    content: '$';
+    color: var(--accent);
+    margin-right: 10px;
+    user-select: none;
+  }
+  .cmd.noprompt::before { content: ''; margin: 0; }
+  .cmd.comment::before { content: '#'; }
+
+  pre {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    background: var(--bg-code);
+    padding: 16px 18px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    line-height: 1.55;
+    margin: 8px 0 16px;
+    color: var(--text-dim);
+  }
+  pre .k { color: var(--accent-2); }
+  pre .s { color: var(--accent-3); }
+  pre .c { color: var(--text-faint); font-style: italic; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 24px;
+    font-size: 13.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 500;
+    border-bottom-color: var(--border-strong);
+    padding-bottom: 8px;
+  }
+  td code {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  td:first-child { width: 34%; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: rgba(255,255,255,0.015); }
+
+  /* Grid layouts */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 860px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 22px 24px;
+    border-radius: 2px;
+  }
+  .card h3 { margin-top: 0; }
+
+  /* Callout */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(217, 119, 87, 0.04);
+    padding: 14px 18px;
+    margin: 16px 0 20px;
+    font-size: 14px;
+  }
+  .callout.warn { border-left-color: var(--danger); background: rgba(232, 92, 92, 0.04); }
+  .callout.good { border-left-color: var(--success); background: rgba(122, 180, 122, 0.04); }
+  .callout .label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-right: 8px;
+    font-weight: 600;
+  }
+  .callout.warn .label { color: var(--danger); }
+  .callout.good .label { color: var(--success); }
+
+  /* Key combo */
+  kbd {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  ul { padding-left: 18px; margin: 8px 0 16px; color: var(--text-dim); }
+  ul li { margin-bottom: 6px; }
+  ul li::marker { color: var(--accent); }
+
+  /* Latest updates ribbon */
+  .ribbon {
+    background: linear-gradient(135deg, var(--bg-elev), var(--bg-card));
+    border: 1px solid var(--accent);
+    padding: 32px 36px;
+    margin: 40px 0 64px;
+    position: relative;
+  }
+  .ribbon::before {
+    content: 'LIVE';
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--accent);
+    color: #1a1a1a;
+    padding: 3px 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    font-weight: 700;
+  }
+  .ribbon h2 { margin-top: 0; font-style: italic; }
+
+  /* Footer */
+  footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* Anchor links */
+  a.anchor { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+  a.anchor:hover { border-bottom-style: solid; }
+
+  /* Print */
+  @media print {
+    body { background: white; color: black; }
+    .card, pre, .cmd, code { background: #f7f5f0 !important; color: black !important; border-color: #ccc !important; }
+    nav.toc { display: none; }
+    .ribbon { border-color: #999; }
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .wrap { padding: 24px 20px 60px; }
+    header.top { grid-template-columns: 1fr; }
+    .meta { text-align: left; }
+    .tier-header { grid-template-columns: auto 1fr; }
+    .tier-subtitle { grid-column: 1 / -1; }
+    table { font-size: 12px; }
+    th, td { padding: 8px 10px; }
+    td:first-child { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header class="top">
+  <div>
+    <div class="brand">Anthropic · Claude Code</div>
+    <h1>The Complete<br><em>Cheat Sheet</em></h1>
+    <p class="subtitle">Every command, flag, shortcut, hook, and workflow — from first install to enterprise-grade agent orchestration. Current through Claude Code v2.1.x and Opus 4.7.</p>
+  </div>
+  <div class="meta">
+    <div><span class="k">revision</span> <span class="v">apr 2026</span></div>
+    <div><span class="k">model</span> <span class="v">opus 4.7</span></div>
+    <div><span class="k">version</span> <span class="v">v2.1.101+</span></div>
+    <div><span class="k">tiers</span> <span class="v">3</span></div>
+  </div>
+</header>
+
+<!-- TOC -->
+<nav class="toc">
+  <a href="#install"><span class="num">00</span>Install &amp; Setup</a>
+  <a href="#beginner"><span class="num">01</span>Beginner</a>
+  <a href="#intermediate"><span class="num">02</span>Intermediate</a>
+  <a href="#expert"><span class="num">03</span>Expert</a>
+  <a href="#whats-new"><span class="num">04</span>What's New</a>
+  <a href="#appendix"><span class="num">05</span>Appendix</a>
+</nav>
+
+<!-- ============================================================ -->
+<!-- INSTALL -->
+<!-- ============================================================ -->
+<section class="section" id="install">
+  <div class="tier-header">
+    <span class="tier-badge t4">00</span>
+    <h2 class="tier-title" style="font-style:normal;">Install &amp; Get Started</h2>
+    <span class="tier-subtitle">Pick your surface</span>
+  </div>
+
+  <p class="lead">Claude Code runs across <strong>terminal, VS Code, JetBrains, Desktop app, and the web</strong>. Every surface shares the same engine, so your <code>CLAUDE.md</code>, settings, and MCP servers travel with you.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Terminal — macOS / Linux / WSL</h3>
+      <div class="cmd">curl -fsSL https://claude.ai/install.sh | bash</div>
+      <p>Auto-updating native install. No Node.js required.</p>
+    </div>
+    <div class="card">
+      <h3>Terminal — Windows PowerShell</h3>
+      <div class="cmd">irm https://claude.ai/install.ps1 | iex</div>
+      <p>Requires Git for Windows. For CMD use <code>curl -fsSL https://claude.ai/install.cmd -o install.cmd &amp;&amp; install.cmd</code>.</p>
+    </div>
+    <div class="card">
+      <h3>Homebrew</h3>
+      <div class="cmd">brew install --cask claude-code</div>
+      <p><code>claude-code</code> tracks stable, <code>claude-code@latest</code> tracks latest. Homebrew does <em>not</em> auto-update — run <code>brew upgrade</code>.</p>
+    </div>
+    <div class="card">
+      <h3>WinGet</h3>
+      <div class="cmd">winget install Anthropic.ClaudeCode</div>
+      <p>Update with <code>winget upgrade Anthropic.ClaudeCode</code>.</p>
+    </div>
+    <div class="card">
+      <h3>VS Code / Cursor</h3>
+      <p>Search <em>"Claude Code"</em> in Extensions (<kbd>⌘⇧X</kbd> / <kbd>Ctrl+Shift+X</kbd>), install, then <kbd>⌘⇧P</kbd> → <em>Claude Code: Open in New Tab</em>. Inline diffs, @-mentions, plan review built in.</p>
+    </div>
+    <div class="card">
+      <h3>JetBrains IDEs</h3>
+      <p>Install <em>Claude Code</em> from the JetBrains Marketplace. Works with IntelliJ, PyCharm, WebStorm, GoLand, RubyMine, and others.</p>
+    </div>
+    <div class="card">
+      <h3>Desktop App</h3>
+      <p>macOS (Intel + Apple Silicon) and Windows (x64 + ARM64). Visual diff review, multiple parallel sessions, scheduled cloud tasks. Paid subscription required.</p>
+    </div>
+    <div class="card">
+      <h3>Web — claude.ai/code</h3>
+      <p>Zero setup. Kick off long-running tasks, work on repos you don't have locally, pull sessions into your terminal later with <code>claude --teleport</code>.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="label">First run</span>
+    <code>cd your-project &amp;&amp; claude</code> — you'll be prompted to log in. For API-usage billing instead of a subscription, use <code>claude auth login --console</code>.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- BEGINNER -->
+<!-- ============================================================ -->
+<section class="section" id="beginner">
+  <div class="tier-header">
+    <span class="tier-badge t1">Tier 01</span>
+    <h2 class="tier-title">Beginner</h2>
+    <span class="tier-subtitle">Your first hour</span>
+  </div>
+
+  <p class="lead">Get productive fast. Eight commands, three shortcuts, and one markdown file are enough to start delegating real work.</p>
+
+  <!-- 01.1 Starting sessions -->
+  <div class="block hot">
+    <h2><span class="num">01.1</span>Starting &amp; ending a session</h2>
+    <table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td><code>claude</code></td><td>Start an interactive session in the current directory.</td></tr>
+      <tr><td><code>claude "explain this project"</code></td><td>Start a session with an initial prompt.</td></tr>
+      <tr><td><code>claude -p "explain this function"</code></td><td>One-shot query: print the answer and exit (no interactive session).</td></tr>
+      <tr><td><code>claude -c</code></td><td>Continue the most recent conversation in this directory.</td></tr>
+      <tr><td><code>claude -r</code></td><td>Open a picker to resume any past session by ID or name.</td></tr>
+      <tr><td><code>claude update</code></td><td>Update to the latest version (native installs auto-update already).</td></tr>
+      <tr><td><code>claude -v</code></td><td>Print the installed version.</td></tr>
+      <tr><td><code>claude auth login</code> / <code>logout</code> / <code>status</code></td><td>Sign in, sign out, or check auth state. Add <code>--console</code> for API billing.</td></tr>
+    </table>
+  </div>
+
+  <!-- 01.2 Essential slash commands -->
+  <div class="block">
+    <h2><span class="num">01.2</span>Essential slash commands</h2>
+    <p>Inside a session, type <code>/</code> to see every command. Start with these:</p>
+    <table>
+      <tr><th>Command</th><th>Purpose</th></tr>
+      <tr><td><code>/help</code></td><td>Show help and all available commands.</td></tr>
+      <tr><td><code>/init</code></td><td>Generate a <code>CLAUDE.md</code> project guide. Set <code>CLAUDE_CODE_NEW_INIT=1</code> for the interactive flow.</td></tr>
+      <tr><td><code>/clear</code></td><td>Wipe conversation + context (aliases: <code>/reset</code>, <code>/new</code>).</td></tr>
+      <tr><td><code>/compact [focus]</code></td><td>Summarize the conversation to free up context. Optional focus hint.</td></tr>
+      <tr><td><code>/model [model]</code></td><td>Switch model mid-session. Takes effect immediately, no wait.</td></tr>
+      <tr><td><code>/cost</code></td><td>Show token usage &amp; spend for this session.</td></tr>
+      <tr><td><code>/usage</code></td><td>Plan usage limits and rate-limit status.</td></tr>
+      <tr><td><code>/config</code></td><td>Open settings: theme, model, editor mode, output style. Alias <code>/settings</code>.</td></tr>
+      <tr><td><code>/doctor</code></td><td>Diagnose your install. Press <kbd>f</kbd> to let Claude fix reported issues.</td></tr>
+      <tr><td><code>/exit</code></td><td>Exit the CLI. Alias: <code>/quit</code>.</td></tr>
+      <tr><td><code>/powerup</code></td><td>Interactive tutorial with animated demos of new features.</td></tr>
+    </table>
+  </div>
+
+  <!-- 01.3 Keyboard shortcuts -->
+  <div class="block">
+    <h2><span class="num">01.3</span>Keyboard shortcuts you'll use every day</h2>
+    <div class="grid-2">
+      <table>
+        <tr><th>Shortcut</th><th>Action</th></tr>
+        <tr><td><kbd>Ctrl+C</kbd></td><td>Cancel input / generation</td></tr>
+        <tr><td><kbd>Ctrl+D</kbd></td><td>Exit session</td></tr>
+        <tr><td><kbd>Ctrl+L</kbd></td><td>Clear prompt + redraw screen (history kept)</td></tr>
+        <tr><td><kbd>Shift+Tab</kbd></td><td>Cycle permission modes</td></tr>
+        <tr><td><kbd>Esc</kbd> <kbd>Esc</kbd></td><td>Rewind to a previous point in the conversation</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Show all available shortcuts for your terminal</td></tr>
+      </table>
+      <table>
+        <tr><th>Input</th><th>Does this</th></tr>
+        <tr><td><kbd>/</kbd> at start</td><td>Slash command / skill</td></tr>
+        <tr><td><kbd>!</kbd> at start</td><td>Bash mode — run a shell command directly</td></tr>
+        <tr><td><kbd>@</kbd></td><td>Mention / autocomplete a file path</td></tr>
+        <tr><td><kbd>\</kbd>+<kbd>Enter</kbd></td><td>Multiline input (works in every terminal)</td></tr>
+        <tr><td><kbd>Shift+Enter</kbd></td><td>Multiline (iTerm2, WezTerm, Ghostty, Kitty). For others: <code>/terminal-setup</code>.</td></tr>
+        <tr><td><kbd>Ctrl+V</kbd></td><td>Paste image from clipboard — inserts an <code>[Image #N]</code> chip</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 01.4 CLAUDE.md -->
+  <div class="block">
+    <h2><span class="num">01.4</span>CLAUDE.md — your project's persistent memory</h2>
+    <p><code>CLAUDE.md</code> sits in your project root and loads at the start of every session. Use it for <strong>coding standards, architecture decisions, preferred libraries, review checklists</strong>, and anything you'd otherwise have to repeat in every prompt.</p>
+    <div class="cmd comment">Generate a starter:</div>
+    <div class="cmd">/init</div>
+    <p>Claude also builds <strong>auto memory</strong> as it works — saving build commands, debugging insights, and project quirks across sessions without you writing a thing. View or toggle with <code>/memory</code>.</p>
+    <div class="callout good">
+      <span class="label">Tip</span>
+      Nested <code>CLAUDE.md</code> files in subdirectories are loaded lazily when Claude accesses those folders. Use them to scope rules per subsystem — e.g. one for <code>/backend</code>, another for <code>/frontend</code>.
+    </div>
+  </div>
+
+  <!-- 01.5 First real tasks -->
+  <div class="block">
+    <h2><span class="num">01.5</span>Your first real tasks</h2>
+    <div class="cmd comment">1. Let it explore the codebase for you</div>
+    <div class="cmd">claude "give me a tour of this repo — what does it do and how is it structured?"</div>
+
+    <div class="cmd comment">2. Fix a bug</div>
+    <div class="cmd">claude "users can't log in — error message is 'invalid token'. find and fix."</div>
+
+    <div class="cmd comment">3. Write tests &amp; verify</div>
+    <div class="cmd">claude "write tests for the auth module, run them, and fix any failures"</div>
+
+    <div class="cmd comment">4. Commit your work</div>
+    <div class="cmd">claude "commit my changes with a descriptive message"</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- INTERMEDIATE -->
+<!-- ============================================================ -->
+<section class="section" id="intermediate">
+  <div class="tier-header">
+    <span class="tier-badge t2">Tier 02</span>
+    <h2 class="tier-title">Intermediate</h2>
+    <span class="tier-subtitle">Multi-session workflows &amp; scripting</span>
+  </div>
+
+  <p class="lead">Pipe, schedule, parallelize, checkpoint. Once you're comfortable with the basics, these are the features that change how you actually work.</p>
+
+  <!-- 02.1 Models & effort -->
+  <div class="block hot">
+    <h2><span class="num">02.1</span>Models &amp; effort levels</h2>
+    <p>Claude Code supports the full Claude 4 family. Effort levels trade latency for depth of reasoning.</p>
+    <table>
+      <tr><th>Model</th><th>Role</th></tr>
+      <tr><td><code>claude-opus-4-7</code></td><td>Flagship reasoning + agentic coding. 3× vision resolution. Default for complex work.</td></tr>
+      <tr><td><code>claude-opus-4-6</code></td><td>Previous flagship. 1M context window GA at standard pricing.</td></tr>
+      <tr><td><code>claude-sonnet-4-6</code></td><td>Balanced speed/intelligence. Default on Free + Pro. 1M context.</td></tr>
+      <tr><td><code>claude-haiku-4-5-20251001</code></td><td>Fast + cheap. Great for subagents and high-volume pipelines.</td></tr>
+    </table>
+
+    <h3>Effort levels (Opus 4.7)</h3>
+    <div class="cmd">/effort high</div>
+    <div class="cmd">claude --effort xhigh</div>
+    <ul>
+      <li><code>low</code> / <code>medium</code> / <code>high</code> — persist across sessions</li>
+      <li><code>xhigh</code> — <em>new in Opus 4.7</em>, sits between <code>high</code> and <code>max</code></li>
+      <li><code>max</code> — current session only, Opus 4.6+ required</li>
+      <li><code>auto</code> — reset to the model's default</li>
+    </ul>
+    <p>Runtime shortcut: <kbd>Option+P</kbd> (macOS) or <kbd>Alt+P</kbd> (Win/Linux) to switch model without clearing your prompt.</p>
+  </div>
+
+  <!-- 02.2 Permission modes -->
+  <div class="block">
+    <h2><span class="num">02.2</span>Permission modes</h2>
+    <p>Cycle with <kbd>Shift+Tab</kbd>, or launch into one with <code>--permission-mode</code>.</p>
+    <table>
+      <tr><th>Mode</th><th>Behavior</th></tr>
+      <tr><td><code>default</code></td><td>Prompt on every new tool pattern.</td></tr>
+      <tr><td><code>acceptEdits</code></td><td>Auto-accept file edits; still prompt for Bash.</td></tr>
+      <tr><td><code>plan</code></td><td>Research + plan only, no writes. Perfect for exploration.</td></tr>
+      <tr><td><code>auto</code></td><td>Classifier-based auto-approval. Review denials with <code>/permissions</code>.</td></tr>
+      <tr><td><code>dontAsk</code></td><td>Never prompt — use saved rules only.</td></tr>
+      <tr><td><code>bypassPermissions</code></td><td>Skip all checks. Equivalent to <code>--dangerously-skip-permissions</code>.</td></tr>
+    </table>
+    <div class="cmd">claude --permission-mode plan</div>
+    <p>Manage saved rules: <code>/permissions</code> (alias <code>/allowed-tools</code>). Jump straight into plan mode mid-session: <code>/plan fix the auth bug</code>.</p>
+  </div>
+
+  <!-- 02.3 Sessions -->
+  <div class="block">
+    <h2><span class="num">02.3</span>Session management</h2>
+    <table>
+      <tr><th>Command / flag</th><th>Use case</th></tr>
+      <tr><td><code>claude -n "auth-refactor"</code></td><td>Name a session — shown in <code>/resume</code> and terminal title.</td></tr>
+      <tr><td><code>claude -r "auth-refactor" "Finish this PR"</code></td><td>Resume by name or ID.</td></tr>
+      <tr><td><code>claude --resume abc123 --fork-session</code></td><td>Resume <em>and</em> create a new session ID instead of overwriting.</td></tr>
+      <tr><td><code>/branch [name]</code> / <code>/fork</code></td><td>Branch the conversation at this point; return later via <code>/resume</code>.</td></tr>
+      <tr><td><code>/rename [name]</code></td><td>Rename the current session; shows on the prompt bar.</td></tr>
+      <tr><td><code>/export [file]</code></td><td>Export conversation as plain text.</td></tr>
+      <tr><td><code>/copy [N]</code></td><td>Copy the last (or Nth latest) response. Press <kbd>w</kbd> in the picker to write to file.</td></tr>
+      <tr><td><code>claude --from-pr 123</code></td><td>Resume sessions linked to a specific GitHub PR.</td></tr>
+    </table>
+  </div>
+
+  <!-- 02.4 Piping & scripting -->
+  <div class="block">
+    <h2><span class="num">02.4</span>Piping, scripting &amp; the CLI<span class="new">AGENT SDK</span></h2>
+    <p>Claude Code follows the Unix philosophy — pipe logs in, chain it with other tools, run it in CI.</p>
+    <div class="cmd comment">Slack yourself if log anomalies appear</div>
+    <div class="cmd">tail -200 app.log | claude -p "Slack me if you see any anomalies"</div>
+
+    <div class="cmd comment">Review changed files for security issues</div>
+    <div class="cmd">git diff main --name-only | claude -p "review these changed files for security issues"</div>
+
+    <div class="cmd comment">Automate translations in CI</div>
+    <div class="cmd">claude -p "translate new strings into French and raise a PR for review"</div>
+
+    <h3>Print-mode flags you'll actually use</h3>
+    <table>
+      <tr><th>Flag</th><th>Purpose</th></tr>
+      <tr><td><code>-p, --print</code></td><td>Non-interactive / headless mode.</td></tr>
+      <tr><td><code>--output-format text|json|stream-json</code></td><td>Choose output shape for scripting.</td></tr>
+      <tr><td><code>--input-format text|stream-json</code></td><td>Match for stdin.</td></tr>
+      <tr><td><code>--max-turns 3</code></td><td>Cap agentic turns; exit on hit.</td></tr>
+      <tr><td><code>--max-budget-usd 5.00</code></td><td>Hard cost ceiling — stops when reached.</td></tr>
+      <tr><td><code>--fallback-model sonnet</code></td><td>Auto-fall back when the default model is overloaded.</td></tr>
+      <tr><td><code>--json-schema '{...}'</code></td><td>Validate output against a JSON Schema. See <a class="anchor" href="#expert">Tier 03</a>.</td></tr>
+      <tr><td><code>--bare</code></td><td>Skip auto-discovery of hooks/skills/plugins/MCP. Starts fast.</td></tr>
+    </table>
+  </div>
+
+  <!-- 02.5 Git & worktrees -->
+  <div class="block">
+    <h2><span class="num">02.5</span>Git worktrees — run sessions in parallel</h2>
+    <p>Kick off an isolated working copy so Claude can refactor on a branch while you keep coding on <code>main</code>.</p>
+    <div class="cmd">claude -w feature-auth</div>
+    <div class="cmd comment">With tmux pane (iTerm2 uses native panes)</div>
+    <div class="cmd">claude -w feature-auth --tmux</div>
+    <p>Worktrees live at <code>&lt;repo&gt;/.claude/worktrees/&lt;name&gt;</code>. Create a <code>.worktreeinclude</code> file to copy gitignored items (<code>.env</code>, local config) into the new worktree.</p>
+
+    <h3>/batch — massively parallel refactors</h3>
+    <div class="cmd">/batch migrate src/ from Solid to React</div>
+    <p>Decomposes the work into 5–30 independent units, spawns one background agent per unit in its own worktree, each opens a PR. Requires a git repo.</p>
+  </div>
+
+  <!-- 02.6 In-session power features -->
+  <div class="block">
+    <h2><span class="num">02.6</span>In-session power features</h2>
+    <table>
+      <tr><th>Feature</th><th>How</th></tr>
+      <tr><td>Transcript viewer</td><td><kbd>Ctrl+O</kbd> — shows tool usage, expands collapsed MCP calls.</td></tr>
+      <tr><td>Task list</td><td><kbd>Ctrl+T</kbd> — in-terminal status panel. Share across sessions with <code>CLAUDE_CODE_TASK_LIST_ID=my-project</code>.</td></tr>
+      <tr><td>Side questions</td><td><code>/btw what was that config file again?</code> — ephemeral, doesn't pollute context, works <em>while Claude is processing</em>.</td></tr>
+      <tr><td>Context visualizer</td><td><code>/context</code> — color-coded grid + optimization suggestions for memory bloat.</td></tr>
+      <tr><td>Interactive diff</td><td><code>/diff</code> — uncommitted changes and per-turn diffs. Arrows to navigate files.</td></tr>
+      <tr><td>Session stats</td><td><code>/stats</code> — daily usage, streaks, model preferences.</td></tr>
+      <tr><td>Checkpointing / rewind</td><td><code>/rewind</code> or <kbd>Esc</kbd><kbd>Esc</kbd> — restore code + conversation to an earlier turn.</td></tr>
+      <tr><td>External editor</td><td><kbd>Ctrl+G</kbd> — open your prompt in <code>$EDITOR</code>.</td></tr>
+      <tr><td>Bash mode</td><td><code>! npm test</code> — runs and adds output to context. Tab-completes from history.</td></tr>
+      <tr><td>Background tasks</td><td><kbd>Ctrl+B</kbd> — background a running Bash invocation. Output goes to a file Claude can read.</td></tr>
+      <tr><td>Reverse history search</td><td><kbd>Ctrl+R</kbd> — fzf-style search through your prompt history.</td></tr>
+      <tr><td>Voice dictation</td><td><code>/voice</code> then hold <kbd>Space</kbd>. Requires a claude.ai account.</td></tr>
+      <tr><td>Fullscreen (no flicker)</td><td><code>/tui fullscreen</code> — the new flicker-free rendering engine.</td></tr>
+      <tr><td>Focus view</td><td><code>/focus</code> — hide the noise; separate from the transcript toggle now.</td></tr>
+      <tr><td>Vim mode</td><td><code>/config</code> → Editor mode → Vim. <kbd>Esc</kbd> for NORMAL, full hjkl + text objects.</td></tr>
+    </table>
+  </div>
+
+  <!-- 02.7 Working directories -->
+  <div class="block">
+    <h2><span class="num">02.7</span>Multi-directory &amp; multi-project</h2>
+    <div class="cmd">claude --add-dir ../apps ../lib</div>
+    <div class="cmd">/add-dir ../shared</div>
+    <p>Grants Claude read/edit access to additional directories. Note: <code>.claude/</code> configs in added directories are <em>not</em> auto-discovered — those only come from the primary working directory.</p>
+  </div>
+
+  <!-- 02.8 Routines and scheduling -->
+  <div class="block">
+    <h2><span class="num">02.8</span>Schedule recurring work</h2>
+    <table>
+      <tr><th>Option</th><th>Where it runs</th></tr>
+      <tr><td><code>/schedule</code> → Routines</td><td>Anthropic-managed infra. Keeps running when your machine is off. Can trigger on API calls / GitHub events.</td></tr>
+      <tr><td>Desktop scheduled tasks</td><td>Your machine. Direct access to local files + tools.</td></tr>
+      <tr><td><code>/loop [interval] [prompt]</code></td><td>Repeat a prompt within a single session. e.g. <code>/loop 5m check if the deploy finished</code>.</td></tr>
+    </table>
+  </div>
+
+  <!-- 02.9 Mobility -->
+  <div class="block">
+    <h2><span class="num">02.9</span>Mobile &amp; hand-off</h2>
+    <table>
+      <tr><th>Flow</th><th>How</th></tr>
+      <tr><td>Terminal → phone</td><td><code>/remote-control</code> (alias <code>/rc</code>) — control from claude.ai or iOS app.</td></tr>
+      <tr><td>Terminal → Desktop app</td><td><code>/desktop</code> (macOS/Win) — continue with visual diff review. Alias <code>/app</code>.</td></tr>
+      <tr><td>Web → terminal</td><td><code>claude --teleport</code> — pull a web session into your terminal.</td></tr>
+      <tr><td>Local → web</td><td><code>claude --remote "Fix the login bug"</code> — kicks off a fresh web session.</td></tr>
+      <tr><td>External events → session</td><td>Channels: wire Telegram, Discord, iMessage, or your own webhooks.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- EXPERT -->
+<!-- ============================================================ -->
+<section class="section" id="expert">
+  <div class="tier-header">
+    <span class="tier-badge t3">Tier 03</span>
+    <h2 class="tier-title">Expert</h2>
+    <span class="tier-subtitle">Agents, hooks, SDK, enterprise</span>
+  </div>
+
+  <p class="lead">Build your own agents, wire Claude into CI/CD, enforce policy with hooks, ship plugins, and integrate with Bedrock / Vertex / Foundry. This is where Claude Code becomes infrastructure.</p>
+
+  <!-- 03.1 Subagents -->
+  <div class="block hot">
+    <h2><span class="num">03.1</span>Subagents &amp; agent teams</h2>
+    <p>Subagents are isolated Claude instances with their own context, spawned by a lead agent. They're ideal for delegating bounded tasks — "find all API endpoints", "review this diff", "upgrade all deps".</p>
+    <table>
+      <tr><th>Command / flag</th><th>What it does</th></tr>
+      <tr><td><code>claude agents</code></td><td>List all configured subagents, grouped by source.</td></tr>
+      <tr><td><code>/agents</code></td><td>Manage agent configurations interactively.</td></tr>
+      <tr><td><code>claude --agent my-custom-agent</code></td><td>Run this session as a named agent.</td></tr>
+      <tr><td><code>claude --agents '{"reviewer": {...}}'</code></td><td>Define dynamic subagents via JSON inline.</td></tr>
+      <tr><td><code>claude --teammate-mode in-process</code></td><td>Control how agent-team teammates display: <code>auto</code>, <code>in-process</code>, <code>tmux</code>.</td></tr>
+    </table>
+    <p>Agents live in <code>.claude/agents/*.md</code> with YAML frontmatter. They can define their own hooks, tools, and <code>isolation: "worktree"</code> for sandboxed work.</p>
+
+    <h3>Example: an Explore-style custom agent</h3>
+<pre>---
+name: security-reviewer
+description: Reviews diffs for security vulnerabilities
+tools: Read, Grep, Glob, Bash
+model: sonnet
+isolation: worktree
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "./scripts/security-check.sh"
+---
+
+You are a security reviewer. Check for injection, auth
+issues, secret exposure, and unsafe defaults.</pre>
+  </div>
+
+  <!-- 03.2 Hooks -->
+  <div class="block">
+    <h2><span class="num">03.2</span>Hooks — the lifecycle API</h2>
+    <p>Hooks are shell commands, HTTP endpoints, LLM prompts, or agents that fire at specific lifecycle events. The complete event list, grouped by cadence:</p>
+
+    <h3>Per-session</h3>
+    <ul>
+      <li><code>SessionStart</code> — new or resumed session. Load dev context, set env vars via <code>CLAUDE_ENV_FILE</code>.</li>
+      <li><code>SessionEnd</code> — cleanup, telemetry, state save.</li>
+      <li><code>InstructionsLoaded</code> — a <code>CLAUDE.md</code> or <code>.claude/rules/*.md</code> file entered context.</li>
+    </ul>
+
+    <h3>Per-turn</h3>
+    <ul>
+      <li><code>UserPromptSubmit</code> — validate, inject context, block, or auto-title.</li>
+      <li><code>Stop</code> — Claude finished responding. Block with <code>decision: "block"</code> to continue the turn.</li>
+      <li><code>StopFailure</code> — turn ended from an API error (rate limit, auth, billing).</li>
+      <li><code>PreCompact</code> / <code>PostCompact</code> — before/after context compaction.</li>
+    </ul>
+
+    <h3>Per-tool-call (inside the agentic loop)</h3>
+    <ul>
+      <li><code>PreToolUse</code> — <em>can block</em>. Return <code>permissionDecision: "allow" | "deny" | "ask" | "defer"</code>.</li>
+      <li><code>PermissionRequest</code> — fires when a dialog is about to show. Allow/deny on the user's behalf.</li>
+      <li><code>PermissionDenied</code> — auto-mode classifier denied. Return <code>retry: true</code> to let the model retry.</li>
+      <li><code>PostToolUse</code> / <code>PostToolUseFailure</code> — after a tool succeeds / fails.</li>
+    </ul>
+
+    <h3>Agent team &amp; teammate</h3>
+    <ul>
+      <li><code>SubagentStart</code> / <code>SubagentStop</code> — when a subagent spawns / finishes.</li>
+      <li><code>TaskCreated</code> / <code>TaskCompleted</code> — enforce task naming / completion gates.</li>
+      <li><code>TeammateIdle</code> — quality gate before a teammate goes idle.</li>
+    </ul>
+
+    <h3>Environment &amp; watchers</h3>
+    <ul>
+      <li><code>CwdChanged</code> — react to <code>cd</code>. Write to <code>CLAUDE_ENV_FILE</code> to persist env.</li>
+      <li><code>FileChanged</code> — watch literal filenames (e.g. <code>.envrc|.env</code>). Perfect for direnv-style flows.</li>
+      <li><code>ConfigChange</code> — block/audit settings-file changes. Matcher filters source.</li>
+      <li><code>WorktreeCreate</code> / <code>WorktreeRemove</code> — replace default git worktree behavior (SVN, Mercurial, Perforce).</li>
+    </ul>
+
+    <h3>MCP</h3>
+    <ul>
+      <li><code>Notification</code> — permission_prompt, idle_prompt, auth_success, elicitation_dialog.</li>
+      <li><code>Elicitation</code> / <code>ElicitationResult</code> — MCP server asks for user input mid-task. Intercept to respond programmatically.</li>
+    </ul>
+
+    <h3>Example — block destructive <code>rm -rf</code></h3>
+<pre>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(rm *)",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-rm.sh"
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+
+    <h3>Example — async background hook</h3>
+<pre>{
+  "type": "command",
+  "command": "./scripts/run-tests.sh",
+  "async": true,
+  "asyncRewake": true
+}</pre>
+    <p><code>asyncRewake: true</code> runs the hook in the background and wakes Claude on exit code 2 — perfect for long test suites.</p>
+
+    <h3>Prompt-based hooks (new)</h3>
+<pre>{
+  "type": "prompt",
+  "prompt": "Given this tool call: $ARGUMENTS, does it leak PII? Reply yes/no JSON.",
+  "model": "haiku"
+}</pre>
+
+    <h3>Settings file hierarchy</h3>
+    <table>
+      <tr><th>Location</th><th>Scope</th></tr>
+      <tr><td><code>~/.claude/settings.json</code></td><td>User-wide (all projects)</td></tr>
+      <tr><td><code>.claude/settings.json</code></td><td>Project — checked in</td></tr>
+      <tr><td><code>.claude/settings.local.json</code></td><td>Project — gitignored</td></tr>
+      <tr><td>Managed policy settings</td><td>Organization-wide (admin)</td></tr>
+      <tr><td>Plugin <code>hooks/hooks.json</code></td><td>Active when plugin enabled</td></tr>
+      <tr><td>Skill / agent frontmatter</td><td>Component lifetime</td></tr>
+    </table>
+    <p>View everything registered: <code>/hooks</code> — read-only browser showing source, matcher, type, and full command for each.</p>
+  </div>
+
+  <!-- 03.3 Skills -->
+  <div class="block">
+    <h2><span class="num">03.3</span>Skills — your own slash commands</h2>
+    <p>A skill is a prompt handed to Claude. Drop a markdown file in <code>.claude/skills/</code> (project) or <code>~/.claude/skills/</code> (personal), add frontmatter, and it shows up in the <code>/</code> menu. Claude can also invoke skills automatically when the description matches.</p>
+
+    <h3>Bundled skills (built-in)</h3>
+    <table>
+      <tr><th>Skill</th><th>What it does</th></tr>
+      <tr><td><code>/batch &lt;instruction&gt;</code></td><td>Decompose a large change into 5–30 worktree-isolated parallel agents with PRs.</td></tr>
+      <tr><td><code>/simplify [focus]</code></td><td>Three parallel review agents aggregate findings, then fix code reuse/quality/efficiency issues.</td></tr>
+      <tr><td><code>/debug [description]</code></td><td>Enable debug logging + troubleshoot from the session log.</td></tr>
+      <tr><td><code>/claude-api</code></td><td>Load Claude API reference for your project's language. Auto-activates on <code>anthropic</code> import.</td></tr>
+      <tr><td><code>/loop</code></td><td>Repeat a prompt while the session stays open. <code>.claude/loop.md</code> for the default.</td></tr>
+    </table>
+
+    <h3>Custom skill skeleton</h3>
+<pre>---
+name: review-pr
+description: Review the current PR for my team's style rules
+tools: Read, Grep, Bash
+---
+
+You are reviewing a pull request. Check for:
+- TypeScript strict-null compliance
+- Missing error handling on async functions
+- Missing tests for public APIs
+
+Output a markdown checklist of issues with file:line refs.</pre>
+    <p>List available skills: <code>/skills</code>. Description listing cap is <strong>1,536 chars</strong> (raised from 250) — you get space for real triggering nuance.</p>
+  </div>
+
+  <!-- 03.4 Plugins -->
+  <div class="block">
+    <h2><span class="num">03.4</span>Plugins &amp; marketplaces</h2>
+    <p>Plugins bundle skills, hooks, MCP servers, and agents into a single installable unit.</p>
+    <div class="cmd">claude plugin install code-review@claude-plugins-official</div>
+    <div class="cmd">claude plugins</div>
+    <p>Manage interactively with <code>/plugin</code> (Installed tab surfaces items needing attention + favorites at top). Hot-reload without restart: <code>/reload-plugins</code>. Load from a local directory (per-session): <code>claude --plugin-dir ./my-plugins</code>.</p>
+    <p>Plugin hooks reference bundled assets via <code>${CLAUDE_PLUGIN_ROOT}</code>; persistent data lives in <code>${CLAUDE_PLUGIN_DATA}</code> (survives plugin updates).</p>
+  </div>
+
+  <!-- 03.5 MCP -->
+  <div class="block">
+    <h2><span class="num">03.5</span>MCP — connect external systems</h2>
+    <p>The <a class="anchor" href="https://modelcontextprotocol.io">Model Context Protocol</a> lets Claude read Google Drive, update Jira, query Slack, call internal APIs. Connect once, reuse everywhere.</p>
+    <div class="cmd">claude mcp</div>
+    <div class="cmd">/mcp</div>
+
+    <h3>Load via config file</h3>
+    <div class="cmd">claude --mcp-config ./mcp.json</div>
+    <div class="cmd">claude --strict-mcp-config --mcp-config ./mcp.json</div>
+    <p>MCP tools appear as <code>mcp__&lt;server&gt;__&lt;tool&gt;</code>. Match every tool from one server in hooks with <code>mcp__memory__.*</code>. MCP servers can also expose prompts as <code>/mcp__&lt;server&gt;__&lt;prompt&gt;</code>.</p>
+    <p>New: MCP OAuth 9728 support, 500K result persistence, conditional filtering for hooks.</p>
+  </div>
+
+  <!-- 03.6 CI/CD -->
+  <div class="block">
+    <h2><span class="num">03.6</span>CI/CD &amp; GitHub integration</h2>
+    <table>
+      <tr><th>Integration</th><th>Setup</th></tr>
+      <tr><td>GitHub Actions app</td><td><code>/install-github-app</code> — walks through repo selection.</td></tr>
+      <tr><td>GitLab CI/CD</td><td>Dedicated runner workflow. See docs.</td></tr>
+      <tr><td>PR auto-review</td><td>Install the <code>code-review</code> plugin on the repo.</td></tr>
+      <tr><td>Slack app</td><td><code>/install-slack-app</code> — route bug reports to PRs via <code>@Claude</code>.</td></tr>
+      <tr><td>Auto-fix PRs</td><td><code>/autofix-pr [prompt]</code> — watches the current branch's PR, pushes fixes when CI fails or reviewers comment.</td></tr>
+      <tr><td>Long-lived OAuth token (CI)</td><td><code>claude setup-token</code> — prints a token for scripts. Subscription required.</td></tr>
+    </table>
+  </div>
+
+  <!-- 03.7 Headless / SDK / Agent SDK -->
+  <div class="block">
+    <h2><span class="num">03.7</span>Headless mode &amp; the Agent SDK</h2>
+    <p>Print mode (<code>-p</code>) is the foundation of the Agent SDK. Combine it with structured outputs and stream-json to build production agents.</p>
+    <div class="cmd">claude -p "list all TODOs as JSON" --output-format json</div>
+    <div class="cmd">claude -p --json-schema '{"type":"object","properties":{"issues":{"type":"array"}}}' "find bugs"</div>
+    <div class="cmd">claude -p --input-format stream-json --output-format stream-json --include-hook-events "query"</div>
+
+    <h3>Flags that matter for scripting</h3>
+    <ul>
+      <li><code>--bare</code> — skip auto-discovery for fast scripted calls.</li>
+      <li><code>--no-session-persistence</code> — don't write sessions to disk (print mode only).</li>
+      <li><code>--exclude-dynamic-system-prompt-sections</code> — move per-machine sections out of the system prompt so prompt-cache reuses across users/machines.</li>
+      <li><code>--permission-prompt-tool mcp_auth_tool</code> — route permission prompts through an MCP tool in non-interactive mode.</li>
+      <li><code>--session-id &lt;uuid&gt;</code> — pin a specific session ID.</li>
+      <li><code>--replay-user-messages</code> — re-emit user messages back on stdout for ack (stream-json in + out).</li>
+    </ul>
+
+    <div class="callout">
+      <span class="label">New in 2.1.89+</span>
+      <code>"defer"</code> as a <code>PreToolUse</code> permission decision lets SDK apps pause at a tool call, collect input via their own UI, and resume with <code>claude -p --resume &lt;id&gt;</code>. The pending call is preserved in the transcript with <code>stop_reason: "tool_deferred"</code>.
+    </div>
+  </div>
+
+  <!-- 03.8 System prompt -->
+  <div class="block">
+    <h2><span class="num">03.8</span>System prompt customization</h2>
+    <table>
+      <tr><th>Flag</th><th>Effect</th></tr>
+      <tr><td><code>--system-prompt "..."</code></td><td>Replace the entire system prompt.</td></tr>
+      <tr><td><code>--system-prompt-file ./prompt.txt</code></td><td>Replace from file.</td></tr>
+      <tr><td><code>--append-system-prompt "..."</code></td><td>Append (preserves built-in capabilities).</td></tr>
+      <tr><td><code>--append-system-prompt-file ./rules.txt</code></td><td>Append from file.</td></tr>
+    </table>
+    <p>Append &gt; replace unless you really need total control — appending keeps all of Claude Code's built-in tool knowledge.</p>
+  </div>
+
+  <!-- 03.9 Tools -->
+  <div class="block">
+    <h2><span class="num">03.9</span>Tools — restricting what Claude can touch</h2>
+    <table>
+      <tr><th>Flag</th><th>Purpose</th></tr>
+      <tr><td><code>--tools "Bash,Edit,Read"</code></td><td>Restrict to a whitelist. <code>""</code> disables all, <code>"default"</code> enables all.</td></tr>
+      <tr><td><code>--allowedTools "Bash(git log *)" "Read"</code></td><td>Tools that execute without permission prompts.</td></tr>
+      <tr><td><code>--disallowedTools "Edit" "Bash(rm *)"</code></td><td>Remove tools from the model's context entirely.</td></tr>
+      <tr><td><code>--disable-slash-commands</code></td><td>Nuke all skills and commands for this session.</td></tr>
+      <tr><td><code>--chrome</code> / <code>--no-chrome</code></td><td>Enable/disable the Chrome browser tool for web automation + testing.</td></tr>
+    </table>
+    <p>Built-in tools: <code>Bash</code>, <code>Edit</code>, <code>Write</code>, <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Agent</code>, <code>WebFetch</code>, <code>WebSearch</code>, <code>AskUserQuestion</code>, <code>ExitPlanMode</code>.</p>
+  </div>
+
+  <!-- 03.10 Enterprise providers -->
+  <div class="block">
+    <h2><span class="num">03.10</span>Enterprise providers</h2>
+    <table>
+      <tr><th>Provider</th><th>Setup</th></tr>
+      <tr><td>Amazon Bedrock</td><td>Set <code>CLAUDE_CODE_USE_BEDROCK=1</code>, then <code>/setup-bedrock</code>. Opus 4.7 + Haiku 4.5 self-serve in 27 regions.</td></tr>
+      <tr><td>Google Vertex AI</td><td>Set <code>CLAUDE_CODE_USE_VERTEX=1</code>, then <code>/setup-vertex</code>.</td></tr>
+      <tr><td>Microsoft Foundry</td><td>Configure via standard env vars per docs; Opus 4.7 available.</td></tr>
+    </table>
+  </div>
+
+  <!-- 03.11 Debugging -->
+  <div class="block">
+    <h2><span class="num">03.11</span>Debugging &amp; diagnostics</h2>
+    <div class="cmd">claude --debug "api,hooks,mcp"</div>
+    <div class="cmd">claude --debug-file /tmp/claude.log</div>
+    <div class="cmd">claude --verbose</div>
+    <p>Or mid-session: <code>/debug [description]</code> starts capturing from that point. <code>/doctor</code> verifies install and press <kbd>f</kbd> to let Claude fix issues automatically.</p>
+  </div>
+
+  <!-- 03.12 Environment variables -->
+  <div class="block">
+    <h2><span class="num">03.12</span>Key environment variables</h2>
+    <table>
+      <tr><th>Variable</th><th>Effect</th></tr>
+      <tr><td><code>ANTHROPIC_API_KEY</code></td><td>API-key auth instead of subscription.</td></tr>
+      <tr><td><code>CLAUDE_CODE_USE_BEDROCK=1</code></td><td>Route to AWS Bedrock.</td></tr>
+      <tr><td><code>CLAUDE_CODE_USE_VERTEX=1</code></td><td>Route to Google Vertex AI.</td></tr>
+      <tr><td><code>CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1</code></td><td>Disable all background-task functionality.</td></tr>
+      <tr><td><code>CLAUDE_CODE_TASK_LIST_ID=name</code></td><td>Share a task list across sessions via a named dir in <code>~/.claude/tasks/</code>.</td></tr>
+      <tr><td><code>CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false</code></td><td>Disable the grayed-out prompt suggestions.</td></tr>
+      <tr><td><code>CLAUDE_CODE_ENABLE_AWAY_SUMMARY=0</code></td><td>Turn off automatic session recap.</td></tr>
+      <tr><td><code>CLAUDE_CODE_NEW_INIT=1</code></td><td>Use the interactive <code>/init</code> flow.</td></tr>
+      <tr><td><code>CLAUDE_CODE_SIMPLE=1</code></td><td>Equivalent to <code>--bare</code>.</td></tr>
+      <tr><td><code>CLAUDE_CODE_USE_POWERSHELL_TOOL=1</code></td><td>Use PowerShell as the Bash-tool shell on Windows.</td></tr>
+      <tr><td><code>CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS</code></td><td>Override SessionEnd hook timeout (default 1.5s).</td></tr>
+      <tr><td><code>CLAUDE_ENV_FILE</code> <em>(inside hooks)</em></td><td>File path to persist env vars from SessionStart / CwdChanged / FileChanged hooks.</td></tr>
+      <tr><td><code>CLAUDE_PROJECT_DIR</code></td><td>Project root — use in hook commands.</td></tr>
+      <tr><td><code>CLAUDE_PLUGIN_ROOT</code> / <code>CLAUDE_PLUGIN_DATA</code></td><td>Plugin install dir / persistent data dir.</td></tr>
+      <tr><td><code>CLAUDE_REMOTE_CONTROL_SESSION_NAME_PREFIX</code></td><td>Prefix for auto-generated remote-control session names.</td></tr>
+      <tr><td><code>TRACEPARENT</code> / <code>TRACESTATE</code></td><td>Distributed trace linking for SDK / headless sessions.</td></tr>
+    </table>
+  </div>
+
+  <!-- 03.13 Security -->
+  <div class="block">
+    <h2><span class="num">03.13</span>Security, sandboxing &amp; policy</h2>
+    <ul>
+      <li><code>/sandbox</code> — toggle sandbox mode on supported platforms. Linux sandbox now ships the <code>apply-seccomp</code> helper for unix-socket blocking.</li>
+      <li><code>/security-review</code> — analyze pending branch changes for injection / auth / data exposure.</li>
+      <li><code>/privacy-settings</code> — view/update privacy (Pro + Max only).</li>
+      <li>Managed-settings <code>allowManagedHooksOnly</code> blocks user/project/plugin hooks outside an org marketplace.</li>
+      <li>Bash timeout now enforced at the documented maximum — no arbitrary overrides.</li>
+      <li>PID-namespace isolation, credential scrubbing, hardened PowerShell permissions, command-injection fixes landed in the 2.1.x cycle.</li>
+    </ul>
+    <div class="callout warn">
+      <span class="label">Caution</span>
+      <code>--dangerously-skip-permissions</code> / <code>bypassPermissions</code> / <code>--allow-dangerously-skip-permissions</code> — bypass exists for a reason. Use on trusted code only, and set <code>permissions.disableBypassPermissionsMode</code> at the managed-settings level if you want it off organization-wide.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- WHAT'S NEW -->
+<!-- ============================================================ -->
+<section class="section" id="whats-new">
+  <div class="tier-header">
+    <span class="tier-badge t4">04</span>
+    <h2 class="tier-title" style="font-style:normal;">What's New</h2>
+    <span class="tier-subtitle">Through April 2026</span>
+  </div>
+
+  <div class="ribbon">
+    <h2>Opus 4.7 — shipped April 16, 2026</h2>
+    <ul>
+      <li><strong>3× vision resolution</strong> (2,576 px / ~3.75 MP). XBOW visual-acuity benchmark: 54.5% → 98.5%.</li>
+      <li><strong>New <code>xhigh</code> effort level</strong> sits between <code>high</code> and <code>max</code> — five levels now: low / medium / high / xhigh / max.</li>
+      <li><strong>Task budgets</strong> (public beta) — token-spend guidance for longer agentic runs.</li>
+      <li>CursorBench 70% (vs 58% for 4.6). 3× more production tasks resolved on Rakuten-SWE-Bench.</li>
+      <li>BigLaw Bench legal reasoning: 90.9%.</li>
+      <li>Updated tokenizer (~1.0–1.35× token usage for the same content). <strong>Pricing unchanged</strong>: $5 / $25 per MTok.</li>
+    </ul>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Claude Code 2.1.x highlights (Mar–Apr 2026)</h3>
+      <ul>
+        <li><code>/tui fullscreen</code> — NO_FLICKER rendering engine.</li>
+        <li><code>/focus</code> separated from the transcript toggle.</li>
+        <li>Push notifications when Remote Control is on.</li>
+        <li><code>autoScrollEnabled</code> config for fullscreen mode.</li>
+        <li><code>/powerup</code> interactive animated tutorials.</li>
+        <li><code>/team-onboarding</code> generates a guide from your last 30 days of usage.</li>
+        <li>Skill listing cap raised <strong>250 → 1,536</strong> chars.</li>
+        <li>Write-tool diff computation 60% faster on files with tabs/&amp;/$.</li>
+        <li>MCP tool hanging + non-streaming retry hangs fixed.</li>
+        <li>Session recap enabled even with telemetry disabled (opt out via <code>CLAUDE_CODE_ENABLE_AWAY_SUMMARY=0</code>).</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Platform &amp; model changes</h3>
+      <ul>
+        <li><strong>1M context window GA</strong> on Opus 4.6 and Sonnet 4.6 at standard pricing — no beta header, no surcharge.</li>
+        <li>Sonnet 4.5 and Sonnet 4 1M-context beta <strong>retires April 30, 2026</strong> — migrate to 4.6.</li>
+        <li>Sonnet 4 &amp; Opus 4 retire on the API <strong>June 15, 2026</strong>. Haiku 3 retires April 19, 2026.</li>
+        <li>Bedrock open to all AWS customers; Opus 4.7 + Haiku 4.5 self-serve across 27 regions.</li>
+        <li>Message Batches API <code>max_tokens</code> cap raised to <strong>300K</strong> (with <code>output-300k-2026-03-24</code> beta header).</li>
+        <li>Web search tool + programmatic tool calling now GA (no beta header).</li>
+        <li>Code execution is <strong>free</strong> when used alongside web search / fetch.</li>
+        <li>Claude Managed Agents (public beta) — fully managed agent harness, SSE streaming, sandboxed containers.</li>
+        <li><code>ant</code> CLI for the Claude API + YAML resource versioning.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- APPENDIX -->
+<!-- ============================================================ -->
+<section class="section" id="appendix">
+  <div class="tier-header">
+    <span class="tier-badge t4">05</span>
+    <h2 class="tier-title" style="font-style:normal;">Appendix</h2>
+    <span class="tier-subtitle">Fast reference</span>
+  </div>
+
+  <!-- A.1 -->
+  <div class="block">
+    <h2><span class="num">A.1</span>Complete CLI flags — alphabetical</h2>
+    <table>
+      <tr><th>Flag</th><th>Purpose</th></tr>
+      <tr><td><code>--add-dir</code></td><td>Additional working directories.</td></tr>
+      <tr><td><code>--agent</code> / <code>--agents</code></td><td>Named agent / inline JSON agent defs.</td></tr>
+      <tr><td><code>--allow-dangerously-skip-permissions</code></td><td>Add bypass to Shift+Tab cycle without starting in it.</td></tr>
+      <tr><td><code>--allowedTools</code> / <code>--disallowedTools</code></td><td>Permissionless / forbidden tools.</td></tr>
+      <tr><td><code>--append-system-prompt[-file]</code></td><td>Append to default system prompt.</td></tr>
+      <tr><td><code>--bare</code></td><td>Minimal mode — no auto-discovery.</td></tr>
+      <tr><td><code>--betas</code></td><td>Beta headers (API-key users).</td></tr>
+      <tr><td><code>--channels</code></td><td>External event sources (Telegram, Discord, iMessage, webhooks).</td></tr>
+      <tr><td><code>--chrome</code> / <code>--no-chrome</code></td><td>Browser automation tool.</td></tr>
+      <tr><td><code>-c, --continue</code></td><td>Continue most recent conversation.</td></tr>
+      <tr><td><code>--dangerously-skip-permissions</code></td><td>Bypass all permission prompts.</td></tr>
+      <tr><td><code>--debug</code> / <code>--debug-file</code></td><td>Debug mode with category filtering.</td></tr>
+      <tr><td><code>--disable-slash-commands</code></td><td>Disable skills and commands.</td></tr>
+      <tr><td><code>--effort</code></td><td><code>low|medium|high|xhigh|max</code></td></tr>
+      <tr><td><code>--exclude-dynamic-system-prompt-sections</code></td><td>Move per-machine sections → first user msg for cache reuse.</td></tr>
+      <tr><td><code>--fallback-model</code></td><td>Auto-fallback when default is overloaded.</td></tr>
+      <tr><td><code>--fork-session</code></td><td>New session ID on resume.</td></tr>
+      <tr><td><code>--from-pr</code></td><td>Resume sessions linked to a GitHub PR.</td></tr>
+      <tr><td><code>--ide</code> / <code>--init</code> / <code>--init-only</code> / <code>--maintenance</code></td><td>IDE connect / hook lifecycle triggers.</td></tr>
+      <tr><td><code>--include-hook-events</code> / <code>--include-partial-messages</code></td><td>Extra detail in stream-json output.</td></tr>
+      <tr><td><code>--input-format</code> / <code>--output-format</code></td><td>text / json / stream-json.</td></tr>
+      <tr><td><code>--json-schema</code></td><td>Validated structured output.</td></tr>
+      <tr><td><code>--max-budget-usd</code> / <code>--max-turns</code></td><td>Spend + turn ceilings.</td></tr>
+      <tr><td><code>--mcp-config</code> / <code>--strict-mcp-config</code></td><td>MCP server configuration.</td></tr>
+      <tr><td><code>--model</code></td><td>Alias (<code>sonnet</code>, <code>opus</code>) or full ID.</td></tr>
+      <tr><td><code>-n, --name</code></td><td>Display name for session.</td></tr>
+      <tr><td><code>--no-session-persistence</code></td><td>Don't write session to disk (print mode).</td></tr>
+      <tr><td><code>-p, --print</code></td><td>Print once and exit.</td></tr>
+      <tr><td><code>--permission-mode</code></td><td><code>default|acceptEdits|plan|auto|dontAsk|bypassPermissions</code>.</td></tr>
+      <tr><td><code>--permission-prompt-tool</code></td><td>MCP tool to handle permission prompts in non-interactive.</td></tr>
+      <tr><td><code>--plugin-dir</code></td><td>Per-session plugin directory.</td></tr>
+      <tr><td><code>--remote</code> / <code>--rc</code> / <code>--remote-control</code></td><td>Web session / Remote Control.</td></tr>
+      <tr><td><code>--replay-user-messages</code></td><td>Re-emit user messages (stream-json both directions).</td></tr>
+      <tr><td><code>-r, --resume</code></td><td>Resume by ID / name, or picker.</td></tr>
+      <tr><td><code>--session-id &lt;uuid&gt;</code></td><td>Pin a specific UUID.</td></tr>
+      <tr><td><code>--setting-sources</code> / <code>--settings</code></td><td>Settings loading.</td></tr>
+      <tr><td><code>--system-prompt[-file]</code></td><td>Replace the system prompt.</td></tr>
+      <tr><td><code>--teammate-mode</code></td><td><code>auto|in-process|tmux</code>.</td></tr>
+      <tr><td><code>--teleport</code></td><td>Resume web session in local terminal.</td></tr>
+      <tr><td><code>--tmux</code></td><td>tmux session for worktree. Use <code>--tmux=classic</code> on iTerm2 to skip native panes.</td></tr>
+      <tr><td><code>--tools</code></td><td>Whitelist built-in tools.</td></tr>
+      <tr><td><code>--verbose</code></td><td>Full turn-by-turn output.</td></tr>
+      <tr><td><code>-v, --version</code></td><td>Version number.</td></tr>
+      <tr><td><code>-w, --worktree</code></td><td>Isolated git worktree session.</td></tr>
+    </table>
+  </div>
+
+  <!-- A.2 All slash commands -->
+  <div class="block">
+    <h2><span class="num">A.2</span>All slash commands — quick index</h2>
+    <p>Not every command appears for every user — availability depends on plan, platform, and environment.</p>
+    <div class="grid-2">
+      <ul>
+        <li><code>/add-dir</code> — add working directory</li>
+        <li><code>/agents</code> — manage subagents</li>
+        <li><code>/autofix-pr</code> — watch PR, push fixes</li>
+        <li><code>/batch</code> — parallel worktree refactors</li>
+        <li><code>/branch</code> (<code>/fork</code>) — branch conversation</li>
+        <li><code>/btw</code> — side question</li>
+        <li><code>/chrome</code> — Chrome extension settings</li>
+        <li><code>/claude-api</code> — API ref + Managed Agents</li>
+        <li><code>/clear</code> (<code>/reset</code>, <code>/new</code>) — wipe context</li>
+        <li><code>/color</code> — prompt-bar color</li>
+        <li><code>/compact</code> — summarize conversation</li>
+        <li><code>/config</code> (<code>/settings</code>) — settings UI</li>
+        <li><code>/context</code> — context grid + suggestions</li>
+        <li><code>/copy</code> — clipboard / file</li>
+        <li><code>/cost</code> — token spend</li>
+        <li><code>/debug</code> — debug logging</li>
+        <li><code>/desktop</code> (<code>/app</code>) — hand off to desktop</li>
+        <li><code>/diff</code> — per-turn diff viewer</li>
+        <li><code>/doctor</code> — diagnose install</li>
+        <li><code>/effort</code> — model effort level</li>
+        <li><code>/exit</code> (<code>/quit</code>)</li>
+        <li><code>/export</code> — plain text export</li>
+        <li><code>/extra-usage</code> — extra-usage config</li>
+        <li><code>/fast</code> — fast mode toggle</li>
+        <li><code>/feedback</code> (<code>/bug</code>)</li>
+        <li><code>/focus</code> — focus view</li>
+        <li><code>/help</code></li>
+        <li><code>/hooks</code> — read-only hooks browser</li>
+        <li><code>/ide</code> — IDE integration</li>
+        <li><code>/init</code> — generate CLAUDE.md</li>
+        <li><code>/insights</code> — session analysis report</li>
+        <li><code>/install-github-app</code></li>
+        <li><code>/install-slack-app</code></li>
+      </ul>
+      <ul>
+        <li><code>/keybindings</code></li>
+        <li><code>/login</code> / <code>/logout</code></li>
+        <li><code>/loop</code> (<code>/proactive</code>)</li>
+        <li><code>/mcp</code> — MCP servers + OAuth</li>
+        <li><code>/memory</code> — edit CLAUDE.md, auto-memory</li>
+        <li><code>/mobile</code> (<code>/ios</code>, <code>/android</code>)</li>
+        <li><code>/model</code> — select / switch</li>
+        <li><code>/passes</code> — share free week</li>
+        <li><code>/permissions</code> (<code>/allowed-tools</code>)</li>
+        <li><code>/plan</code> — enter plan mode</li>
+        <li><code>/plugin</code> — plugin manager</li>
+        <li><code>/powerup</code> — interactive tutorials</li>
+        <li><code>/privacy-settings</code></li>
+        <li><code>/recap</code> — session recap on demand</li>
+        <li><code>/release-notes</code></li>
+        <li><code>/reload-plugins</code></li>
+        <li><code>/remote-control</code> (<code>/rc</code>)</li>
+        <li><code>/remote-env</code></li>
+        <li><code>/rename</code></li>
+        <li><code>/resume</code> (<code>/continue</code>)</li>
+        <li><code>/rewind</code> (<code>/checkpoint</code>)</li>
+        <li><code>/sandbox</code></li>
+        <li><code>/schedule</code> — routines</li>
+        <li><code>/security-review</code></li>
+        <li><code>/setup-bedrock</code> / <code>/setup-vertex</code></li>
+        <li><code>/simplify</code> — parallel review + fix</li>
+        <li><code>/skills</code></li>
+        <li><code>/stats</code> — usage visualization</li>
+        <li><code>/status</code></li>
+        <li><code>/statusline</code> — status-line config</li>
+        <li><code>/stickers</code></li>
+        <li><code>/tasks</code> (<code>/bashes</code>) — background tasks</li>
+        <li><code>/team-onboarding</code> — generate onboarding guide</li>
+        <li><code>/teleport</code> (<code>/tp</code>)</li>
+        <li><code>/terminal-setup</code></li>
+        <li><code>/theme</code></li>
+        <li><code>/tui</code> — fullscreen rendering</li>
+        <li><code>/ultraplan</code> — draft + review + execute</li>
+        <li><code>/upgrade</code></li>
+        <li><code>/usage</code></li>
+        <li><code>/voice</code> — push-to-talk</li>
+        <li><code>/web-setup</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- A.3 The .claude directory -->
+  <div class="block">
+    <h2><span class="num">A.3</span>The <code>.claude/</code> directory layout</h2>
+<pre><span class="c"># Project root</span>
+.claude/
+├── settings.json              <span class="c"># checked in</span>
+├── settings.local.json        <span class="c"># gitignored</span>
+├── agents/
+│   └── security-reviewer.md   <span class="c"># subagent w/ YAML frontmatter</span>
+├── skills/
+│   └── review-pr.md           <span class="c"># custom slash command</span>
+├── rules/
+│   └── typescript-style.md    <span class="c"># lazy-loaded rules (paths: glob)</span>
+├── hooks/
+│   └── block-rm.sh            <span class="c"># reference via $CLAUDE_PROJECT_DIR</span>
+├── loop.md                    <span class="c"># default /loop prompt</span>
+├── worktrees/                 <span class="c"># auto-created by --worktree</span>
+│   └── feature-auth/
+└── tasks/                     <span class="c"># shared via CLAUDE_CODE_TASK_LIST_ID</span>
+
+CLAUDE.md                      <span class="c"># session-start project guide</span>
+
+<span class="c"># User-wide (~/.claude/)</span>
+~/.claude/
+├── settings.json
+├── agents/, skills/, rules/   <span class="c"># personal versions</span>
+└── tasks/</pre>
+  </div>
+
+  <!-- A.4 Essential references -->
+  <div class="block">
+    <h2><span class="num">A.4</span>Official docs — go deeper</h2>
+    <ul>
+      <li><strong>Overview</strong> — <code>https://code.claude.com/docs/en/overview</code></li>
+      <li><strong>CLI reference</strong> — <code>https://code.claude.com/docs/en/cli-reference</code></li>
+      <li><strong>Commands</strong> — <code>https://code.claude.com/docs/en/commands</code></li>
+      <li><strong>Interactive mode</strong> — <code>https://code.claude.com/docs/en/interactive-mode</code></li>
+      <li><strong>Hooks reference</strong> — <code>https://code.claude.com/docs/en/hooks</code></li>
+      <li><strong>Skills</strong> — <code>https://code.claude.com/docs/en/skills</code></li>
+      <li><strong>Subagents</strong> — <code>https://code.claude.com/docs/en/sub-agents</code></li>
+      <li><strong>Plugins</strong> — <code>https://code.claude.com/docs/en/plugins</code></li>
+      <li><strong>MCP</strong> — <code>https://code.claude.com/docs/en/mcp</code></li>
+      <li><strong>Agent SDK</strong> — <code>https://code.claude.com/docs/en/agent-sdk/overview</code></li>
+      <li><strong>Changelog</strong> — <code>https://code.claude.com/docs/en/changelog</code></li>
+      <li><strong>What's New</strong> — <code>https://code.claude.com/docs/en/whats-new</code></li>
+      <li><strong>npm package</strong> — <code>https://www.npmjs.com/package/@anthropic-ai/claude-code</code></li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>Claude Code · The Complete Cheat Sheet — April 2026 · Current through v2.1.101+ &amp; Opus 4.7</div>
+  <div>Built for the terminal. Sourced from official docs — Claude Code moves fast, always verify at <a href="https://code.claude.com/docs/en/overview">code.claude.com</a>.</div>
+</footer>
+
+</div>
+</body>
+</html>

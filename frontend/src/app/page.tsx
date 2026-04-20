@@ -495,6 +495,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-4">
             <Link href="/discover" className="link-ruled">Ecosystem →</Link>
+            <Link href="/cheatsheet" className="link-ruled">Cheat Sheet →</Link>
             <Link href="/legend" className="link-ruled">Legend →</Link>
             <Link href="/settings" className="link-ruled">Settings →</Link>
           </div>
