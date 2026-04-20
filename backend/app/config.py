@@ -20,10 +20,13 @@ from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Any
 
+from filelock import FileLock
+
 log = logging.getLogger(__name__)
 
 # Persisted config lives next to the backend package (gitignored).
 _CONFIG_FILE = Path(__file__).resolve().parent.parent / ".llm_config.json"
+_LOCK = FileLock(str(_CONFIG_FILE) + ".lock")
 
 _PERSIST_KEYS = frozenset(
     {"llm_base_url", "llm_model", "llm_api_key", "llm_timeout", "llm_temperature"}
@@ -101,7 +104,8 @@ class Settings:
                 setattr(self, key, value)
                 changed = True
         if changed:
-            _save(self._persistable())
+            with _LOCK:
+                _save(self._persistable())
 
     def reset_to_env(self) -> None:
         """Discard all overrides and delete saved config."""

@@ -17,11 +17,14 @@ import time
 from pathlib import Path
 from typing import Any, Iterable
 
+from filelock import FileLock
+
 log = logging.getLogger(__name__)
 
 _BACKEND_ROOT = Path(__file__).resolve().parent.parent.parent
 STORE = _BACKEND_ROOT / ".applied_releases.json"
 LOG_FILE = _BACKEND_ROOT / "APPLIED_RELEASES.md"
+_LOCK = FileLock(str(STORE) + ".lock")
 
 _RELEVANCE_ORDER = {"high": 0, "medium": 1, "low": 2, "none": 3}
 
@@ -74,23 +77,25 @@ def apply_release(
         "items": items,
         "note": note.strip(),
     }
-    data = _load()
-    data["applied"] = [e for e in data["applied"] if e.get("date") != date]
-    data["applied"].insert(0, entry)
-    _save(data)
-    _regenerate_log(data["applied"])
+    with _LOCK:
+        data = _load()
+        data["applied"] = [e for e in data["applied"] if e.get("date") != date]
+        data["applied"].insert(0, entry)
+        _save(data)
+        _regenerate_log(data["applied"])
     return entry
 
 
 def unapply_release(date: str) -> bool:
     """Remove a release from the applied list. Returns True if something was removed."""
-    data = _load()
-    before = len(data["applied"])
-    data["applied"] = [e for e in data["applied"] if e.get("date") != date]
-    if len(data["applied"]) == before:
-        return False
-    _save(data)
-    _regenerate_log(data["applied"])
+    with _LOCK:
+        data = _load()
+        before = len(data["applied"])
+        data["applied"] = [e for e in data["applied"] if e.get("date") != date]
+        if len(data["applied"]) == before:
+            return False
+        _save(data)
+        _regenerate_log(data["applied"])
     return True
 
 

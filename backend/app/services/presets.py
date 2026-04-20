@@ -19,9 +19,12 @@ import time
 from pathlib import Path
 from typing import Any
 
+from filelock import FileLock
+
 log = logging.getLogger(__name__)
 
 STORE = Path(__file__).resolve().parent.parent.parent / ".presets.json"
+_LOCK = FileLock(str(STORE) + ".lock")
 
 _SLUG_RE = re.compile(r"[^a-z0-9-]+")
 _MAX_PRESETS = 200  # Generous upper bound to keep the file small.
@@ -88,48 +91,50 @@ def save_preset(
     preset_id = _make_id(tier, name)
     now = time.time()
 
-    store = _load()
-    presets: list[dict[str, Any]] = store["presets"]
+    with _LOCK:
+        store = _load()
+        presets: list[dict[str, Any]] = store["presets"]
 
-    existing_idx = next(
-        (i for i, p in enumerate(presets) if p.get("id") == preset_id), None
-    )
-    if existing_idx is not None:
-        entry = presets[existing_idx]
-        entry.update(
-            {
+        existing_idx = next(
+            (i for i, p in enumerate(presets) if p.get("id") == preset_id), None
+        )
+        if existing_idx is not None:
+            entry = presets[existing_idx]
+            entry.update(
+                {
+                    "name": name,
+                    "tier": tier,
+                    "data": data,
+                    "updated_at": now,
+                }
+            )
+        else:
+            entry = {
+                "id": preset_id,
                 "name": name,
                 "tier": tier,
                 "data": data,
+                "created_at": now,
                 "updated_at": now,
             }
-        )
-    else:
-        entry = {
-            "id": preset_id,
-            "name": name,
-            "tier": tier,
-            "data": data,
-            "created_at": now,
-            "updated_at": now,
-        }
-        presets.insert(0, entry)
+            presets.insert(0, entry)
 
-    # Cap total count so the file never grows without bound. Trim oldest.
-    if len(presets) > _MAX_PRESETS:
-        presets.sort(key=lambda p: p.get("updated_at", 0.0), reverse=True)
-        del presets[_MAX_PRESETS:]
+        # Cap total count so the file never grows without bound. Trim oldest.
+        if len(presets) > _MAX_PRESETS:
+            presets.sort(key=lambda p: p.get("updated_at", 0.0), reverse=True)
+            del presets[_MAX_PRESETS:]
 
-    store["presets"] = presets
-    _save(store)
+        store["presets"] = presets
+        _save(store)
     return entry
 
 
 def delete_preset(preset_id: str) -> bool:
-    store = _load()
-    before = len(store["presets"])
-    store["presets"] = [p for p in store["presets"] if p.get("id") != preset_id]
-    if len(store["presets"]) == before:
-        return False
-    _save(store)
+    with _LOCK:
+        store = _load()
+        before = len(store["presets"])
+        store["presets"] = [p for p in store["presets"] if p.get("id") != preset_id]
+        if len(store["presets"]) == before:
+            return False
+        _save(store)
     return True
